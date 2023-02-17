@@ -1,0 +1,81 @@
+[{
+  "_id": {
+    "$oid": "638b9faf888035731fb7e2d5"
+  },
+  "cron_id": "1",
+  "cron_total_links": "1273",
+  "cron_limit_set": "318",
+  "cron_traverse_status": "0",
+  "cron_created_at": "2022-12-04",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638bb643888035731fb7f31b"
+  },
+  "cron_id": "2",
+  "cron_total_links": "263",
+  "cron_limit_set": "66",
+  "cron_traverse_status": "2",
+  "cron_created_at": "2022-12-04",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638d7913888035731fb7f5f6"
+  },
+  "cron_id": "3",
+  "cron_total_links": "838",
+  "cron_limit_set": "210",
+  "cron_traverse_status": "0",
+  "cron_created_at": "2022-12-05",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638d9ef6888035731fb809c0"
+  },
+  "cron_id": "4",
+  "cron_total_links": "133",
+  "cron_limit_set": "33",
+  "cron_traverse_status": "2",
+  "cron_created_at": "2022-12-05",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638ef075888035731fb82aca"
+  },
+  "cron_id": "5",
+  "cron_total_links": "2094",
+  "cron_limit_set": "524",
+  "cron_traverse_status": "0",
+  "cron_created_at": "2022-12-06",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638f101f888035731fb84f0a"
+  },
+  "cron_id": "6",
+  "cron_total_links": "81",
+  "cron_limit_set": "20",
+  "cron_traverse_status": "2",
+  "cron_created_at": "2022-12-06",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63901a934f4fa501e4af430c"
+  },
+  "cron_id": "7",
+  "cron_total_links": "2092",
+  "cron_limit_set": "523",
+  "cron_traverse_status": "0",
+  "cron_created_at": "2022-12-07",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63903b844f4fa501e4af7356"
+  },
+  "cron_id": "8",
+  "cron_total_links": "63",
+  "cron_limit_set": "32",
+  "cron_traverse_status": "2",
+  "cron_created_at": "2022-12-07",
+  "__v": 0
+}]

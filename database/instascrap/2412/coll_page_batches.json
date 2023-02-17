@@ -1,0 +1,109 @@
+[{
+  "_id": {
+    "$oid": "63a5a2f4feee34de40915c49"
+  },
+  "batch_id": "1",
+  "batch_user_id": "1",
+  "batch_name": "page links testing.xlsx",
+  "batch_file_data": "page links testing.xlsx_1671799540077",
+  "batch_total_links": "120",
+  "batch_created_at": "2022-12-23  18:15:40",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a316feee34de40915ead"
+  },
+  "batch_id": "2",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:16:14",
+  "batch_created_at": "2022-12-23  18:16:14",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a3acfeee34de40915ec2"
+  },
+  "batch_id": "3",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:18:44",
+  "batch_created_at": "2022-12-23  18:18:44",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a40efeee34de40915ee2"
+  },
+  "batch_id": "4",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:20:22",
+  "batch_created_at": "2022-12-23  18:20:22",
+  "__v": 0,
+  "batch_is_traverse": "0"
+},{
+  "_id": {
+    "$oid": "63a5a43ceaab428b7a64044a"
+  },
+  "batch_id": "5",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:21:08",
+  "batch_created_at": "2022-12-23  18:21:08",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a50bd978f3a94629da77"
+  },
+  "batch_id": "6",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:24:35",
+  "batch_created_at": "2022-12-23  18:24:35",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a51cd978f3a94629da7b"
+  },
+  "batch_id": "7",
+  "batch_user_id": "1",
+  "batch_name": "Single Link At 2022-12-23  18:24:52",
+  "batch_created_at": "2022-12-23  18:24:52",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a6fbfe0a36a8fa98ee7b"
+  },
+  "batch_id": "8",
+  "batch_user_id": "1",
+  "batch_name": "page links testing.xlsx",
+  "batch_file_data": "page links testing.xlsx_1671800571048",
+  "batch_total_links": "120",
+  "batch_created_at": "2022-12-23  18:32:51",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a5a88dfe0a36a8fa98eeaa"
+  },
+  "batch_id": "9",
+  "batch_user_id": "1",
+  "batch_name": "page links testing.xlsx",
+  "batch_file_data": "page links testing.xlsx_1671800972556",
+  "batch_total_links": "120",
+  "batch_created_at": "2022-12-23  18:39:33",
+  "__v": 0,
+  "batch_is_traverse": "1"
+},{
+  "_id": {
+    "$oid": "63a6dab071b2406682720409"
+  },
+  "batch_id": "10",
+  "batch_user_id": "1",
+  "batch_name": "page links testing.xlsx",
+  "batch_file_data": "page links testing.xlsx_1671879342540",
+  "batch_total_links": "120",
+  "batch_is_traverse": "0",
+  "batch_created_at": "2022-12-24  16:25:43",
+  "__v": 0
+}]

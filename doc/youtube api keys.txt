@@ -1,0 +1,8 @@
+youtube api key
+AIzaSyDV-VVpbB1mTQFmypTz3lO0QcDINOreeyc
+
+Your Client ID
+611814030717-r8q6rvpugrfc04l4424s94coi0fnu63f.apps.googleusercontent.com
+
+Your Client Secret
+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

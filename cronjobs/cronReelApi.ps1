@@ -1,0 +1,1 @@
+Invoke-WebRequest -Method GET -Uri "http://192.168.5.20:505/cronReelApi" 

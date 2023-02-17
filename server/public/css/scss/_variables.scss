@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+$font: 'Roboto', Arial, Helvetica, sans-serif;
+
+$main-orange: #FF6A1D;
+$dark-gray: #282828;
+$gray: #707070;
+$light-gray: #F3F3F3;
+
+@function em($pixel, $context: 16) {
+  @return $pixel / $context + em;
+}
+
+@mixin typo($size) {
+  font-family: $font;
+  font-size: em($size);
+}
+
+@mixin device($size) {
+  @if $size == small {
+    @media only screen and (max-width: 560px) {
+      @content; 
+    }
+  }
+}

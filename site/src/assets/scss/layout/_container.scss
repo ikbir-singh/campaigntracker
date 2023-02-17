@@ -1,0 +1,93 @@
+.pageWrapper {
+  min-height: 100vh;
+}
+.contentArea {
+  flex-grow: 1;
+}
+.wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+.card {
+  box-shadow: $card-box-shadow;
+  margin-bottom: 30px;
+}
+
+.circle-box {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-radius: 100%;
+  &.lg-box {
+    width: 60px;
+    height: 60px;
+    font-size: 21px;
+    line-height: 60px;
+  }
+}
+.button-group .btn {
+  margin: 3px;
+}
+
+@media screen and (min-width: 575px) {
+  .export
+  {
+    float: right;
+    margin: 30px 0px 0px 0px;
+  }
+  .exportpage
+  {
+    float: right;
+  }
+  .search
+  {
+    float: left;
+    margin: 30px 0px 0px 0px;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  .search
+  {
+    margin: 0px 0px 20px 0px;
+  }
+}
+
+/* For Desktop View */
+@media screen and (min-width: 1024px) {
+  .loader-style {
+    margin: 400px 600px;
+  }
+  .knowmore
+  {
+    // margin: 0px 0px 0px 30px;
+    float: right;
+  }
+}
+ 
+/* For Tablet View */
+@media screen and (min-device-width: 768px)
+and (max-device-width: 1024px) {
+  .loader-style {
+    margin: 300px 300px;
+  }
+}
+ 
+/* For Mobile Portrait View */
+@media screen and (min-device-width: 370px)
+and (max-device-width: 480px)
+and (orientation: portrait) {
+  .loader-style {
+    margin: 300px 150px;
+  }
+}
+ 
+/* For iPhone 4 Portrait or Landscape View */
+@media screen and (max-device-width: 370px)
+and (-webkit-min-device-pixel-ratio: 2) {
+  .loader-style {
+    margin: 300px 100px;
+  }
+}
+ 

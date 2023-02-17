@@ -1,0 +1,124 @@
+[{
+  "_id": {
+    "$oid": "6388cb3997806b1bab390177"
+  },
+  "email": "user1",
+  "name": "User One",
+  "password": "$2a$10$Ro8uJ.K9oaklWEuLTB4lEu7b03OHD3tO/eFaDd8NaGtRKAXqNL4yK",
+  "user_id": "1",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "user1"
+},{
+  "_id": {
+    "$oid": "639322c256ccf494855d23cf"
+  },
+  "email": "user2@gmail.com",
+  "name": "User Two",
+  "password": "$2a$10$qLG6AOl3zjSfCwHKnW8iiOhbP6isKRIdCtnQfiT9lJ32bKoGO01JO",
+  "user_id": "2",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "user2"
+},{
+  "_id": {
+    "$oid": "6399987056ccf494855d23e3"
+  },
+  "email": "aakasharma2610@gmail.com",
+  "name": "Aakash Sharma",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "3",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "aakasharma2610@gmail.com"
+},{
+  "_id": {
+    "$oid": "6399996856ccf494855d23e4"
+  },
+  "email": "sareenkavita3@gmail.com",
+  "name": "Kavita Sareen",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "4",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "sareenkavita3@gmail.com"
+},{
+  "_id": {
+    "$oid": "639999ae56ccf494855d23e5"
+  },
+  "email": "vidhum@unisysinfo.in",
+  "name": "Vidhu Malik",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "5",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "vidhum@unisysinfo.in"
+},{
+  "_id": {
+    "$oid": "63999a0556ccf494855d23e6"
+  },
+  "email": "marketingreports@unisysinfo.in",
+  "name": "Nutan Kumari",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "6",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "marketingreports@unisysinfo.in"
+},{
+  "_id": {
+    "$oid": "63999a6356ccf494855d23e7"
+  },
+  "email": "kritikad@udigitalcom.com",
+  "name": "Kritika Dutta",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "7",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "kritikad@udigitalcom.com"
+},{
+  "_id": {
+    "$oid": "63999aa456ccf494855d23e8"
+  },
+  "email": "jannatj@unisysinfo.in",
+  "name": "Jannat Jain",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "8",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "jannatj@unisysinfo.in"
+},{
+  "_id": {
+    "$oid": "63999b0d56ccf494855d23e9"
+  },
+  "email": "ambikas@unisysinfo.in",
+  "name": "Ambika Sharma",
+  "password": "$2a$10$ovt3HuPThyGqXVVnOCLcM.12RRMe7h85uP/HYdJaVAOawGvg07wpq",
+  "user_id": "9",
+  "user_status": "1",
+  "user_type": "1",
+  "username": "ambikas@unisysinfo.in"
+},{
+  "_id": {
+    "$oid": "639b48fd56ccf494855d23ff"
+  },
+  "email": "admin@gmail.com",
+  "name": "Admin",
+  "password": "$2a$10$HrqWB7eVWnnG2vl.qosF.O5K/VAEDzQ7AUfgivoREmZeIkDd0WqXW",
+  "user_id": "-1",
+  "user_status": "1",
+  "user_type": "-1",
+  "username": "admin"
+},{
+  "_id": {
+    "$oid": "639c45c7c5bb344d41d7d5a2"
+  },
+  "user_id": "10",
+  "name": "Test",
+  "username": "test@123.com",
+  "password": "$2a$10$wQfVJhvETq3Pbz8pG9usfe802Bd6oSTxq2Qaj9U3jSUC41A9UMQQW",
+  "email": "test@123.com",
+  "user_status": "1",
+  "user_type": "1",
+  "tokens": [],
+  "__v": 0
+}]

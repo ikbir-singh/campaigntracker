@@ -1,0 +1,37 @@
+[{
+  "_id": {
+    "$oid": "6384629fcd7c6f4fa07df8b5"
+  },
+  "project_id": 1,
+  "project_name": "Project 1",
+  "project_status": 1,
+  "project_starts_on": "2022-11-30",
+  "project_ends_on": "2022-12-11",
+  "project_added_on": "Mon Nov 28 2022 12:56:23 GMT+0530 (India Standard Time)",
+  "project_updated_on": "Fri Dec 02 2022 12:14:00 GMT+0530 (India Standard Time)",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "638462afcd7c6f4fa07df8bc"
+  },
+  "project_id": 2,
+  "project_name": "Project 2",
+  "project_status": 1,
+  "project_starts_on": "2022-12-01",
+  "project_ends_on": "2022-12-08",
+  "project_added_on": "Mon Nov 28 2022 12:56:39 GMT+0530 (India Standard Time)",
+  "project_updated_on": "Tue Nov 29 2022 15:38:28 GMT+0530 (India Standard Time)",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6389927cd21de814716c464b"
+  },
+  "project_id": 3,
+  "project_name": "Project 3",
+  "project_status": 1,
+  "project_starts_on": "2022-12-02",
+  "project_ends_on": "2023-12-02",
+  "project_added_on": "Fri Dec 02 2022 11:21:56 GMT+0530 (India Standard Time)",
+  "project_updated_on": "Fri Dec 02 2022 11:21:56 GMT+0530 (India Standard Time)",
+  "__v": 0
+}]
