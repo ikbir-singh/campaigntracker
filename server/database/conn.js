@@ -5,6 +5,8 @@ var mongoose = require('mongoose');
 mongoose.connect('mongodb+srv://aryan-mehta524:ikbirsingh1%40@aryancluster.7bnqahi.mongodb.net/instascrap');
 
 
+// test 1
+
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
