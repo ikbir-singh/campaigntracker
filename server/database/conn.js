@@ -7,6 +7,8 @@ mongoose.connect('mongodb+srv://aryan-mehta524:ikbirsingh1%40@aryancluster.7bnqa
 
 //test
 
+// test 2
+
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
