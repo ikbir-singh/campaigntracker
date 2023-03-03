@@ -12,6 +12,7 @@ import {
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form } from 'reactstrap';
 import { UncontrolledAlert } from "reactstrap";
 import SalesChart from "../components/dashboard/SalesChart";
+import LinkChart from "../components/dashboard/LinkChart";
 import ProjectTables from "../components/dashboard/ProjectTable";
 import TopCards from "../components/dashboard/TopCards";
 import ComponentCard from '../components/ComponentCard';
@@ -141,8 +142,8 @@ const Starter = (props) => {
 
   const [date] = React.useState(defaultDate)
 
-  const [get_start_date, setStartDate] = React.useState(0);
-  const [get_end_date, setEndDate] = React.useState(0);
+  const [get_start_date, setStartDate] = React.useState(datetime('customdate', 15));
+  const [get_end_date, setEndDate] = React.useState(datetime('currentdate'));
 
   const [get_reel_data_list, setReelDatalist] = React.useState([]);
 
@@ -153,7 +154,7 @@ const Starter = (props) => {
   const [get_reel_total_comments, setReelTotalComments] = React.useState(0);
   const [get_reel_total_links, setReelTotallinks] = React.useState(0);
 
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(3);
 
 
   const [getGraphDate, setGraphDate] = React.useState([]);
@@ -164,6 +165,8 @@ const Starter = (props) => {
 
 
   const [getGarphType, setGraphType] = React.useState('Views');
+
+  const [getSearch, setSearch] = React.useState(null);
 
 
   // Modal open state
@@ -212,53 +215,58 @@ const Starter = (props) => {
   }
 
   React.useEffect(() => {
-    getReeldata();
-    getReeldataforTable()
-    getReeldataforGraph()
-    getuploadLinkDataforGraph()
-  }, [getProjectId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    getReeldatawhere();
+
+    getReeldataforTable();
+    getReeldataforGraph(getGarphType);
+    getuploadLinkDataforGraph();
+  }, [getProjectId, get_start_date, get_end_date, getSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
+  // const getReeldata = async () => {
 
-  const getReeldata = async () => {
 
+  //   if (getProjectId !== 0) {
+
+  //     let project_id = getProjectId;
+
+  //     let searchtype = getSearch;
+
+  //     const res = await fetch(`/getReel?project_id=${project_id}&searchtype=${searchtype}`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       },
+  //     });
+
+  //     const data = await res.json();
+  //     // console.log(data);
+
+  //     if (res.status === 422 || !data) {
+  //       console.log(data);
+
+  //     } else {
+
+  //       if (data) {
+  //         setReelDatalist(data);
+  //         // setValue(0);
+  //       }
+
+  //     }
+  //   }
+  // }
+
+  const getReeldataforTable = async () => {
 
     if (getProjectId !== 0) {
 
-      let project_id = getProjectId;
-
-      const res = await fetch(`/getReel/${project_id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        },
-      });
-
-      const data = await res.json();
-      console.log(data);
-
-      if (res.status === 422 || !data) {
-        console.log(data);
-
-      } else {
-
-        if (data) {
-          setReelDatalist(data);
-          setValue(0);
-        }
-
-      }
-    }
-  }
-
-  const getReeldataforTable = async (check_date_start = '', check_date_end = '') => {
-
-    if (getProjectId !== 0) {
-
-      let start_date = check_date_start;
-      let end_date = check_date_end;
+      let start_date = get_start_date;
+      let end_date = get_end_date;
 
       let project_id = getProjectId.toString();
+
+      let searchtype = getSearch;
 
       if (project_id && (start_date || end_date)) {
 
@@ -268,7 +276,7 @@ const Starter = (props) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            project_id, start_date, end_date
+            project_id, start_date, end_date, searchtype
           })
         });
 
@@ -293,7 +301,7 @@ const Starter = (props) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            project_id
+            project_id, searchtype
           })
         });
 
@@ -313,12 +321,12 @@ const Starter = (props) => {
     }
   }
 
-  const getuploadLinkDataforGraph = async (check_date_start = '', check_date_end = '') => {
+  const getuploadLinkDataforGraph = async () => {
 
     if (getProjectId !== 0) {
 
-      let start_date = check_date_start;
-      let end_date = check_date_end;
+      let start_date = get_start_date;
+      let end_date = get_end_date;
 
       let project_id = getProjectId.toString();
 
@@ -371,16 +379,7 @@ const Starter = (props) => {
     }
   }
 
-  const getReeldataforGraph = async (check_date_start = '', check_date_end = '', type = '') => {
-
-    // let value = document.getElementById("search").value;
-    // if (typeof e === 'object') {
-
-    //   value = e.target.value;
-
-    // }
-
-    // console.log(value);
+  const getReeldataforGraph = async (type = '') => {
 
     if (getProjectId !== 0) {
 
@@ -394,10 +393,12 @@ const Starter = (props) => {
         graphtype = getGarphType
       }
 
-      let start_date = check_date_start;
-      let end_date = check_date_end;
+      let start_date = get_start_date;
+      let end_date = get_end_date;
 
       let project_id = getProjectId.toString();
+
+      var searchtype = getSearch
 
       if (project_id && (start_date || end_date)) {
 
@@ -407,12 +408,13 @@ const Starter = (props) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            project_id, start_date, end_date
+            project_id, start_date, end_date, searchtype
           })
         });
 
         const data = await res.json();
-        // console.log(data);
+
+        console.log(data);
 
         if (res.status === 422 || !data) {
           console.log(data);
@@ -431,13 +433,12 @@ const Starter = (props) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            project_id
+            project_id, searchtype
           })
         });
 
         const data = await res.json();
-        // console.log(data);
-
+        console.log(data);
         if (res.status === 422 || !data) {
           console.log(data);
 
@@ -487,6 +488,8 @@ const Starter = (props) => {
       reelLinks.push(link);
     }
 
+    console.log(date)
+
     setGraphDate(date)
     setReelTotalViews((reelViews[reelViews.length - 1] ? millify(reelViews[reelViews.length - 1]) : 0));
     setReelTotalLikes((reelLikes[reelLikes.length - 1] ? millify(reelLikes[reelLikes.length - 1]) : 0));
@@ -531,11 +534,13 @@ const Starter = (props) => {
     setuploadLinkGraphData(uploadLinks)
   }
 
-  let getReeldatawhere = async (check_date_start = '', check_date_end = '') => {
-    let start_date = check_date_start;
-    let end_date = check_date_end;
+  let getReeldatawhere = async () => {
+    let start_date = get_start_date;
+    let end_date = get_end_date;
 
     let project_id = getProjectId;
+
+    let searchtype = getSearch;
 
 
     if (project_id || start_date || end_date) {
@@ -546,12 +551,11 @@ const Starter = (props) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          project_id, start_date, end_date
+          project_id, start_date, end_date, searchtype
         })
       });
 
       const data = await res.json();
-      // console.log(data);
 
       if (res.status === 422 || !data) {
 
@@ -583,17 +587,6 @@ const Starter = (props) => {
 
     setStartDate(start_date);
     setEndDate(end_date);
-
-    if (start_date) {
-      getReeldatawhere(start_date, end_date);
-    }
-    else {
-      getReeldata();
-    }
-
-    getReeldataforTable(start_date, end_date);
-    getReeldataforGraph(start_date, end_date);
-    getuploadLinkDataforGraph(start_date, end_date);
   }
 
   function datetime(type, days) {
@@ -658,7 +651,8 @@ const Starter = (props) => {
     } else if (value === '3') {
 
       let start_date = datetime('customdate', 15)
-      let end_date = datetime('customdate', 1)
+      let end_date = datetime('currentdate')
+
 
       chamgepagedata(start_date, end_date);
 
@@ -772,7 +766,7 @@ const Starter = (props) => {
       document.getElementById('export_sheet').style.display = 'none';
     }
   }
-  
+
   const csvReport = {
     data: data,
     headers: headers,
@@ -869,6 +863,8 @@ const Starter = (props) => {
     document.getElementById("userfile").value = '';
   }
 
+
+
   const upload_file = async (e) => {
 
     e.preventDefault();
@@ -930,7 +926,8 @@ const Starter = (props) => {
             setLoading(false);
             let flash = { error: "Unable to add Reel Link. Please try again." };
             setflashdata(flash);
-            handleRemove()
+            handleRemove();
+            handleSearchRemove();
             return;
           }
 
@@ -948,28 +945,20 @@ const Starter = (props) => {
         }
 
       }
-
+      let flash = {};
       if (checkupdate === record_numbers) {
-        setLoading(false);
-        getReeldata();
-        let flash = { success: "Excelsheet uploaded successfully." };
-        setflashdata(flash);
-        handleRemove()
+        flash = { success: "Excelsheet uploaded successfully." };
       }
       else if (checkupdate > 0) {
-        setLoading(false);
-        getReeldata();
-        let flash = { success: checkupdate + " Row Inserted, " + checksame + " Link already present" };
-        setflashdata(flash);
-        handleRemove()
+        flash = { success: checkupdate + " Row Inserted, " + checksame + " Link already present" };
       }
       else {
-        setLoading(false);
-        getReeldata();
-        let flash = { error: "Details Invaild, Please Check the Sheet. " + checksame + " Link already present, " + checkupdate + " Row Inserted" };
-        setflashdata(flash);
-        handleRemove()
+        flash = { error: "Details Invaild, Please Check the Sheet. " + checksame + " Link already present, " + checkupdate + " Row Inserted" };
       }
+      setLoading(false);
+      handleSearchRemove();
+      setflashdata(flash);
+      handleRemove()
     }
 
   }
@@ -1020,30 +1009,22 @@ const Starter = (props) => {
 
       let data = await res.json();
 
+      let flash = {};
 
       if (res.status === 404 || !data) {
-        // console.log(data);
-        let flash = { error: "Unable to add Reel Link. Please try again." };
-        setflashdata(flash);
-        getReeldata();
-        setINP_link({ link: '' });
-        document.getElementById("link").value = '';
+        flash = { error: "Unable to add Reel Link. Please try again." };
       }
       else if (res.status === 401) {
-        // console.log(data);
-        let flash = { error: "Link already Present. Please try again with different Link." };
-        setflashdata(flash);
-        getReeldata();
-        setINP_link({ link: '' });
-        document.getElementById("link").value = '';
+        flash = { error: "Link already Present. Please try again with different Link." };
       }
       else {
-        let flash = { success: "Link added successfully." };
-        setflashdata(flash);
-        getReeldata();
-        setINP_link({ link: '' });
-        document.getElementById("link").value = '';
+        flash = { success: "Link added successfully." };
       }
+
+      setflashdata(flash);
+      handleSearchRemove()
+      setINP_link({ link: '' });
+      document.getElementById("link").value = '';
 
 
     }
@@ -1057,54 +1038,45 @@ const Starter = (props) => {
 
   }
 
-  // const SearchLink = async (e) => {
+  const handleSearchRemove = () => {
+    setSearch(null);
+    document.getElementById("search").value = '';
+    // getReeldataforGraph(getGarphType);
+  }
 
-  //   let value = '';
-  //   if (e) {
-  //     value = e.target.value;
+  const SearchLink = async (e) => {
 
-  //   }
+    let value = document.getElementById("search").value;
+    if (typeof e === 'object') {
+      value = e.target.value;
+    }
 
-  //   console.log(value);
+    function checkSearchUrl(url) {
+      const regex = /^https?:\/\/(?:www\.)?instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/;
+      const match = url.match(regex);
+      console.log(match)
+      if (match) {
+        return match[1];
+      } else {
+        return null;
+      }
+    }
 
-  // let user_id = UserID.toString();
-
-  // var res = {};
-
-  // if (UserType === "-1") {
-  //     res = await fetch("/getBatchData", {
-  //         method: "POST",
-  //         headers: {
-  //             "Content-Type": "application/json"
-  //         },
-  //         body: JSON.stringify({
-  //             value
-  //         })
-  //     });
-  // }
-  // else {
-  //     res = await fetch("/getBatchData", {
-  //         method: "POST",
-  //         headers: {
-  //             "Content-Type": "application/json"
-  //         },
-  //         body: JSON.stringify({
-  //             value, user_id
-  //         })
-  //     });
-  // }
-
-
-  // const data = await res.json();
-
-  // if (res.status === 422 || !data) {
-  //     console.log(data);
-
-  // } else {
-  //     setBatchlist(data);
-
-  // }
-  // }
+    if (value) {
+      let val = checkSearchUrl(value);
+      if (val) {
+        setSearch(val)
+      }
+      else {
+        let flash = { error: "Search Incorrect!" };
+        setflashdata(flash);
+        handleSearchRemove()
+      }
+    }
+    else {
+      handleSearchRemove()
+    }
+  }
 
 
   return (
@@ -1147,24 +1119,18 @@ const Starter = (props) => {
                   if (get_flash_data['success']) {
                     return (
                       <>
-                        {/* <div className="alert alert-success"> */}
                         <UncontrolledAlert color="success">
                           <span><strong> Success! </strong>{get_flash_data['success']}</span>
                         </UncontrolledAlert>
-
-                        {/* </div> */}
                       </>
                     )
                   }
                   if (get_flash_data['error']) {
                     return (
                       <>
-                        {/* <div className="alert alert-danger"> */}
                         <UncontrolledAlert color="danger">
                           <span><strong> Error! </strong>{get_flash_data['error']}</span>
                         </UncontrolledAlert>
-
-                        {/* </div> */}
                       </>
                     )
                   }
@@ -1211,13 +1177,16 @@ const Starter = (props) => {
 
           </Row>
           {/* <br /> */}
-          {/* <Row>
+
+          {/* search button */}
+          <Row>
             <Col>
               <FormGroup>
-                <Input id="search" name="search" type="text" onChange={getReeldataforGraph} placeholder="Search by Username or Reel Link or Reel Shortcode" />
+                <Input id="search" name="search" type="text" onChange={SearchLink} placeholder="Search by Reel Link...." />
+                {getSearch && (<i className="bi bi-x-circle-fill" onClick={handleSearchRemove} style={{ float: "right", margin: "-30px 10px" }} ></i>)}
               </FormGroup>
             </Col>
-          </Row> */}
+          </Row>
 
           <Row>
 
@@ -1278,25 +1247,6 @@ const Starter = (props) => {
                 }
               })()
             }
-            {/* <Col sm="2" lg="2" xl="2" xxl="2">
-              <Form >
-                <FormGroup>
-                  <Label for="startDate">From</Label>
-                  <Input type="date" name="startDate" id="startDate" max={date.toLocaleDateString('en-CA')} onChange={setdata} placeholder="date placeholder" />
-                </FormGroup>
-              </Form>
-            </Col>
-            <Col sm="2" lg="2" xl="2" xxl="2">
-              <Form >
-                <FormGroup>
-                  <Label for="endDate">To</Label>
-                  <Input type="date" name="endDate" id="endDate" max={date.toLocaleDateString('en-CA')} onChange={setdata} placeholder="date placeholder" />
-                </FormGroup>
-              </Form>
-            </Col>
-            <Col sm="2" lg="2" xl="2" xxl="2">
-              <Button color="primary search" onClick={selectdate}>Search</Button>
-            </Col> */}
 
             {/* export button */}
             <Col sm="3" lg="3" xl="2" xxl="2"  >
@@ -1309,7 +1259,7 @@ const Starter = (props) => {
 
           {/* links, views, like and comment buttons */}
           <Row>
-            <Col sm="6" lg="3" onClick={() => getReeldataforGraph(get_start_date, get_end_date, 'Traverse Links')}>
+            <Col sm="6" lg="3" onClick={() => getReeldataforGraph('Traverse Links')}>
               <TopCards
                 bg="bg-light-success text-success"
                 title="Profit"
@@ -1319,7 +1269,7 @@ const Starter = (props) => {
 
               />
             </Col>
-            <Col sm="6" lg="3" onClick={() => getReeldataforGraph(get_start_date, get_end_date, 'Views')}>
+            <Col sm="6" lg="3" onClick={() => getReeldataforGraph('Views')}>
               <TopCards
                 bg="bg-light-danger text-danger"
                 title="Refunds"
@@ -1328,7 +1278,7 @@ const Starter = (props) => {
                 icon="bi bi-eye"
               />
             </Col>
-            <Col sm="6" lg="3" onClick={() => getReeldataforGraph(get_start_date, get_end_date, 'Likes')}>
+            <Col sm="6" lg="3" onClick={() => getReeldataforGraph('Likes')}>
               <TopCards
                 bg="bg-light-warning text-warning"
                 title="New Project"
@@ -1337,7 +1287,7 @@ const Starter = (props) => {
                 icon="bi bi-heart"
               />
             </Col>
-            <Col sm="6" lg="3" onClick={() => getReeldataforGraph(get_start_date, get_end_date, 'Comments')}>
+            <Col sm="6" lg="3" onClick={() => getReeldataforGraph('Comments')}>
               <TopCards
                 bg="bg-light-info text-into"
                 title="Sales"
@@ -1357,10 +1307,10 @@ const Starter = (props) => {
                   return (
                     <>
                       <Col >
-                        <SalesChart type={'Upload Links'} view={Object.values(getuploadLinkGarphData)} date={Object.values(getuploadLinkGraphDate)} />
+                        {getuploadLinkGarphData.length > 0 && <LinkChart type={'Upload Links'} view={Object.values(getuploadLinkGarphData)} date={Object.values(getuploadLinkGraphDate)} />}
                       </Col>
                       <Col >
-                        <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />
+                        {getGarphData.length > 0 && <LinkChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />}
                       </Col>
                     </>
 
@@ -1369,7 +1319,7 @@ const Starter = (props) => {
                 else {
                   return (
                     <Col >
-                      <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />
+                      {getGarphData.length > 0 && <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />}
                     </Col>
                   )
                 }
@@ -1381,7 +1331,7 @@ const Starter = (props) => {
           {/* Table section */}
           <Row>
             <Col lg="12">
-              <ProjectTables tabledata={get_reel_data_table} />
+              {get_reel_data_table.length > 0 && <ProjectTables tabledata={get_reel_data_table} />}
             </Col>
           </Row>
 

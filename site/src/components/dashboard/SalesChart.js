@@ -3,56 +3,138 @@ import Chart from "react-apexcharts";
 
 const SalesChart = (props) => {
 
-  const { type, view, date } = props;
+  var { type, view, date } = props;
 
-  // console.log(type)
-  // console.log(view)
-  // console.log(date)
+  var newarr = [];
+
+  if (view.length && date.length) {
+
+    newarr = [view[0]];
+    // newarr = [0];
+    for (let i = 1; i < view.length; i++) {
+      newarr.push((view[i] - view[i - 1] > 0 ? view[i] - view[i - 1] : 0 ));
+    }
+  }
 
   const chartoptions = {
     series: [
       {
-        name: type,
+        name: 'TOTAL',
+        type: 'area',
         data: view,
+        color: '#008FFB'
       },
-      // {
-      //   name: "Oneplue 9",
-      //   data: [0, 11, 32, 45, 32, 34, 52, 41],
-      // }, 
+      {
+        name: 'DAY WISE',
+        type: 'area',
+        data: newarr,
+        color: '#00E396'
+      }
     ],
     options: {
       chart: {
-        id: 'area-datetime',
-        type: "area",
-      },
-      dataLabels: {
-        enabled: false,
+        height: 350,
+        type: 'line',
+        stacked: false,
+        toolbar: {
+          show: true,
+          tools: {
+            pan: false,
+            zoom: true,
+            reset: true
+          }
+        },
       },
       grid: {
-        strokeDashArray: 3,
+        padding: {
+          left: 30, // or whatever value that works
+          right: 30 // or whatever value that works
+        },
       },
-
+      dataLabels: {
+        enabled: false
+      },
       stroke: {
-        curve: "smooth",
-        width: 1,
+        width: [3, 3, 3],
+        curve: 'smooth'
       },
       xaxis: {
-        categories: date
+        categories: date,
+        type: 'datetime',
+        tickPlacement: 'on',
       },
-      // xaxis: {
-      //   categories: [
-      //     "Jan",
-      //     "Feb",
-      //     "March",
-      //     "April",
-      //     "May",
-      //     "June",
-      //     "July",
-      //     "Aug",
-      //   ],
+      markers: {
+        size: [2, 2]
+      },
+      yaxis: [
+        {
+          axisTicks: {
+            show: true,
+          },
+          axisBorder: {
+            show: true,
+            color: '#008FFB'
+          },
+          labels: {
+            style: {
+              colors: '#008FFB',
+            }
+          },
+          title: {
+            text: type,
+            style: {
+              color: '#008FFB',
+            }
+          },
+          // tooltip: {
+          //   enabled: true
+          // }
+        },
+        {
+          seriesName: type,
+          opposite: true,
+          axisTicks: {
+            show: true,
+          },
+          axisBorder: {
+            show: true,
+            color: '#00E396'
+          },
+          labels: {
+            style: {
+              colors: '#00E396',
+            },
+          },
+          title: {
+            text: type,
+            style: {
+              color: '#00E396',
+            }
+          }
+        }
+      ],
+      // tooltip: {
+      //   // fixed: {
+      //   //   enabled: true,
+      //   //   position: 'bottomLeft', // topRight, topLeft, bottomRight, bottomLeft
+      //   //   offsetY: 30,
+      //   //   offsetX: 60
+      //   // },
       // },
+      legend: {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'left',
+        onItemClick: {
+          toggleDataSeries: true
+        },
+        onItemHover: {
+          highlightDataSeries: true
+        },
+      },
     },
   };
+
   return (
     <Card>
       <CardBody>

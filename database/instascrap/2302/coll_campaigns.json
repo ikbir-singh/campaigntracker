@@ -1,0 +1,53 @@
+[{
+  "_id": {
+    "$oid": "63e3a22257021fb769c5129a"
+  },
+  "campaign_id": "1",
+  "user_id": "-1",
+  "campaign_name": "Test 1",
+  "campaign_type": "Youtube",
+  "campaign_users": [
+    "1",
+    "2"
+  ],
+  "campaign_status": "1",
+  "campaign_starts_on": "2023-02-09",
+  "campaign_ends_on": "2024-2-09",
+  "campaign_added_on": "Wed Feb 08 2023 18:52:42 GMT+0530 (India Standard Time)",
+  "campaign_updated_on": "Wed Feb 08 2023 18:53:20 GMT+0530 (India Standard Time)",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63e3abd157021fb769c51440"
+  },
+  "campaign_id": "2",
+  "user_id": "-1",
+  "campaign_name": "Test 2",
+  "campaign_type": "Instagram",
+  "campaign_users": [
+    "1"
+  ],
+  "campaign_status": "1",
+  "campaign_starts_on": "2023-02-10",
+  "campaign_ends_on": "2024-2-10",
+  "campaign_added_on": "Wed Feb 08 2023 19:34:01 GMT+0530 (India Standard Time)",
+  "campaign_updated_on": "Wed Feb 08 2023 19:34:01 GMT+0530 (India Standard Time)",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "63e503b62e401e3bf477d876"
+  },
+  "campaign_id": "3",
+  "user_id": "-1",
+  "campaign_name": "Test 2",
+  "campaign_type": "Youtube",
+  "campaign_users": [
+    "2"
+  ],
+  "campaign_status": "1",
+  "campaign_starts_on": "2023-02-10",
+  "campaign_ends_on": "2024-2-10",
+  "campaign_added_on": "Thu Feb 09 2023 20:01:18 GMT+0530 (India Standard Time)",
+  "campaign_updated_on": "Fri Feb 10 2023 15:20:11 GMT+0530 (India Standard Time)",
+  "__v": 0
+}]

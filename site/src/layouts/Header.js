@@ -22,6 +22,10 @@ const Header = (props) => {
 
   // console.log(UserType);
 
+  const pathArray = window.location.pathname.split("/");
+  const CampaignType = pathArray[1] ? pathArray[1].split("-")[0] : null;
+  console.log(CampaignType);
+
   let navigate = useNavigate();
 
 
@@ -43,7 +47,7 @@ const Header = (props) => {
   React.useEffect(() => {
     getProjectdata();
     getAccountName();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [UserID, UserType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getProjectdata = async () => {
 

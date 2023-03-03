@@ -12,6 +12,7 @@ import {
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form } from 'reactstrap';
 import { UncontrolledAlert } from "reactstrap";
 import SalesChart from "../components/dashboard/SalesChart";
+import LinkChart from "../components/dashboard/LinkChart";
 import YoutubeTables from "../components/dashboard/YoutubeTable";
 import TopCards from "../components/dashboard/TopCards";
 import ComponentCard from '../components/ComponentCard';
@@ -172,6 +173,7 @@ const CamapignContentComponent = (props) => {
 
     const [getGarphType, setGraphType] = React.useState('Views');
 
+    const [getSearch, setSearch] = React.useState(null);
 
     // Modal open state
     const [modalDate, setModalDate] = React.useState(false);
@@ -218,51 +220,60 @@ const CamapignContentComponent = (props) => {
         }
     }
 
+    // React.useEffect(() => {
+    //     getVideodata();
+    //     getVideodataforTable()
+    //     getVideodataforGraph()
+    //     getuploadLinkDataforGraph()
+    // }, [getCampaignId, campaignType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
     React.useEffect(() => {
-        getVideodata();
+        getVideodatawhere();
         getVideodataforTable()
-        getVideodataforGraph()
+        getVideodataforGraph(getGarphType)
         getuploadLinkDataforGraph()
-    }, [getCampaignId, campaignType]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [campaignType, getCampaignId, get_start_date, get_end_date, getSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
-    const getVideodata = async () => {
+    // const getVideodata = async () => {
 
+
+    //     if (getCampaignId !== 0) {
+
+    //         let campaign_id = getCampaignId;
+
+    //         const res = await fetch(`/getVideo/${campaign_id}`, {
+    //             method: "GET",
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             },
+    //         });
+
+    //         const data = await res.json();
+
+    //         if (res.status === 422 || !data) {
+    //             console.log(data);
+
+    //         } else {
+
+    //             if (data) {
+    //                 setVideoDatalist(data);
+    //             }
+
+    //         }
+    //     }
+    // }
+
+    const getVideodataforTable = async () => {
 
         if (getCampaignId !== 0) {
 
-            let campaign_id = getCampaignId;
+            let start_date = get_start_date;
+            let end_date = get_end_date;
 
-            const res = await fetch(`/getVideo/${campaign_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-            });
-
-            const data = await res.json();
-
-            if (res.status === 422 || !data) {
-                console.log(data);
-
-            } else {
-
-                if (data) {
-                    setVideoDatalist(data);
-                    setValue(0);
-                }
-
-            }
-        }
-    }
-
-    const getVideodataforTable = async (check_date_start = '', check_date_end = '') => {
-
-        if (getCampaignId !== 0) {
-
-            let start_date = check_date_start;
-            let end_date = check_date_end;
+            let searchtype = getSearch;
 
             let campaign_id = getCampaignId.toString();
 
@@ -274,7 +285,7 @@ const CamapignContentComponent = (props) => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        campaign_id, start_date, end_date
+                        campaign_id, start_date, end_date, searchtype
                     })
                 });
 
@@ -299,7 +310,7 @@ const CamapignContentComponent = (props) => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        campaign_id
+                        campaign_id, searchtype
                     })
                 });
 
@@ -319,12 +330,12 @@ const CamapignContentComponent = (props) => {
         }
     }
 
-    const getuploadLinkDataforGraph = async (check_date_start = '', check_date_end = '') => {
+    const getuploadLinkDataforGraph = async () => {
 
         if (getCampaignId !== 0) {
 
-            let start_date = check_date_start;
-            let end_date = check_date_end;
+            let start_date = get_start_date;
+            let end_date = get_end_date;
 
             let campaign_id = getCampaignId.toString();
 
@@ -377,16 +388,7 @@ const CamapignContentComponent = (props) => {
         }
     }
 
-    const getVideodataforGraph = async (check_date_start = '', check_date_end = '', type = '') => {
-
-        // let value = document.getElementById("search").value;
-        // if (typeof e === 'object') {
-
-        //     value = e.target.value;
-
-        // }
-
-        // console.log(value);
+    const getVideodataforGraph = async (type = '') => {
 
         if (getCampaignId !== 0) {
 
@@ -400,8 +402,10 @@ const CamapignContentComponent = (props) => {
                 graphtype = getGarphType
             }
 
-            let start_date = check_date_start;
-            let end_date = check_date_end;
+            let start_date = get_start_date;
+            let end_date = get_end_date;
+
+            let searchtype = getSearch;
 
             let campaign_id = getCampaignId.toString();
 
@@ -413,7 +417,7 @@ const CamapignContentComponent = (props) => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        campaign_id, start_date, end_date
+                        campaign_id, start_date, end_date, searchtype
                     })
                 });
 
@@ -436,7 +440,7 @@ const CamapignContentComponent = (props) => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        campaign_id
+                        campaign_id, searchtype
                     })
                 });
 
@@ -536,12 +540,13 @@ const CamapignContentComponent = (props) => {
         setuploadLinkGraphData(uploadLinks)
     }
 
-    let getVideodatawhere = async (check_date_start = '', check_date_end = '') => {
-        let start_date = check_date_start;
-        let end_date = check_date_end;
+    let getVideodatawhere = async () => {
+        let start_date = get_start_date;
+        let end_date = get_end_date;
 
         let campaign_id = getCampaignId;
 
+        let searchtype = getSearch;
 
         if (campaign_id || start_date || end_date) {
             // console.log(campaign_id);
@@ -551,7 +556,7 @@ const CamapignContentComponent = (props) => {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    campaign_id, start_date, end_date
+                    campaign_id, start_date, end_date, searchtype
                 })
             });
 
@@ -588,17 +593,6 @@ const CamapignContentComponent = (props) => {
 
         setStartDate(start_date);
         setEndDate(end_date);
-
-        if (start_date) {
-            getVideodatawhere(start_date, end_date);
-        }
-        else {
-            getVideodata();
-        }
-
-        getVideodataforTable(start_date, end_date);
-        getVideodataforGraph(start_date, end_date);
-        getuploadLinkDataforGraph(start_date, end_date);
     }
 
     function datetime(type, days) {
@@ -728,11 +722,6 @@ const CamapignContentComponent = (props) => {
         }
     }
 
-    // const convertdate = (timestamp) => {
-    //     var theDate = new Date(parseInt(timestamp) * 1000);
-    //     var dateString = theDate.toLocaleString();
-    //     return dateString
-    // }
 
     const headers = [
         { label: "S.No", key: "key" },
@@ -750,19 +739,30 @@ const CamapignContentComponent = (props) => {
 
         let id = 0;
 
-        for (const element of get_video_data_list) {
-            id = id + 1;
-            data[id] = {
-                ...data[id],
-                key: id,
-                video_link: (element.video_link ? element.video_link : 'NA'),
-                video_channel_name: (element.video_channel_name ? element.video_channel_name : 'NA'),
-                video_view: (element.video_view ? element.video_view : 'NA'),
-                video_like: (element.video_like ? element.video_like : 'NA'),
-                video_comment: (element.video_comment ? element.video_comment : 'NA'),
-                video_title: (element.video_title ? element.video_title : 'NA'),
-                video_date_of_posting: (element.video_date_of_posting ? element.video_date_of_posting : 'NA')
+        for (var element of get_video_data_list) {
+            if (element.doc) {
+                element = element.doc;
+                id = id + 1;
+                data[id] = {
+                    ...data[id],
+                    key: id,
+                    video_link: (element.video_link ? element.video_link : 'NA'),
+                    video_channel_name: (element.video_channel_name ? element.video_channel_name : 'NA'),
+                    video_view: (element.video_view ? element.video_view : 'NA'),
+                    video_like: (element.video_like ? element.video_like : 'NA'),
+                    video_comment: (element.video_comment ? element.video_comment : 'NA'),
+                    video_title: (element.video_title ? element.video_title : 'NA'),
+                    video_date_of_posting: (element.video_date_of_posting ? element.video_date_of_posting : 'NA')
+                }
             }
+        }
+    }
+
+    if (document.getElementById('export_sheet')) {
+        if (data.length > 0) {
+            document.getElementById('export_sheet').style.display = 'block';
+        } else {
+            document.getElementById('export_sheet').style.display = 'none';
         }
     }
 
@@ -931,7 +931,8 @@ const CamapignContentComponent = (props) => {
                         setLoading(false);
                         let flash = { error: "Unable to add Links. Please try again." };
                         setflashdata(flash);
-                        handleRemove()
+                        handleRemove();
+                        handleSearchRemove();
                         return;
                     }
 
@@ -950,27 +951,22 @@ const CamapignContentComponent = (props) => {
 
             }
 
+            let flash = {};
+
             if (checkupdate === record_numbers) {
-                setLoading(false);
-                getVideodata();
-                let flash = { success: "Excelsheet uploaded successfully." };
-                setflashdata(flash);
-                handleRemove()
+                flash = { success: "Excelsheet uploaded successfully." };
             }
             else if (checkupdate > 0) {
-                setLoading(false);
-                getVideodata();
-                let flash = { success: checkupdate + " Row Inserted, " + checksame + " Link already present" };
-                setflashdata(flash);
-                handleRemove()
+                flash = { success: checkupdate + " Row Inserted, " + checksame + " Link already present" };
             }
             else {
-                setLoading(false);
-                getVideodata();
-                let flash = { error: "Details Invaild, Please Check the Sheet. " + checksame + " Link already present, " + checkupdate + " Row Inserted" };
-                setflashdata(flash);
-                handleRemove()
+                flash = { error: "Details Invaild, Please Check the Sheet. " + checksame + " Link already present, " + checkupdate + " Row Inserted" };
             }
+
+            setLoading(false);
+            setflashdata(flash);
+            handleRemove();
+            handleSearchRemove();
         }
 
     }
@@ -980,13 +976,6 @@ const CamapignContentComponent = (props) => {
         var { link } = inpval_link;
 
         let video_link = link;
-
-        // let today = new Date();
-        // let require_date = new Date(today);
-        // require_date.setDate(today.getDate() - 1);
-        // let date = require_date.toLocaleString('en-GB').split('/');
-        // let time = require_date.toLocaleString('en-GB').split('/')[2].split(',');
-        // // let yesterdaydate = time[0] + "-" + date[1] + "-" + date[0];
 
         let today = new Date();
         let date = today.toLocaleString('en-GB').split('/');
@@ -1028,32 +1017,29 @@ const CamapignContentComponent = (props) => {
 
             let data = await res.json();
 
+            let flash = {};
 
             if (res.status === 404 || !data) {
                 if (data === null)
                     data = "Unable to add Link. Please try again."
-                let flash = { error: data };
-                setflashdata(flash);
-                getVideodata();
-                setINP_link({ link: '' });
-                document.getElementById("link").value = '';
+                flash = { error: data };
+
             }
             else if (res.status === 401) {
                 if (data === null)
                     data = "Link already Present. Please try again with different Link."
-                let flash = { error: data };
-                setflashdata(flash);
-                getVideodata();
-                setINP_link({ link: '' });
-                document.getElementById("link").value = '';
+                flash = { error: data };
+
             }
             else {
-                let flash = { success: "Link added successfully." };
-                setflashdata(flash);
-                getVideodata();
-                setINP_link({ link: '' });
-                document.getElementById("link").value = '';
+                flash = { success: "Link added successfully." };
+
             }
+
+            setflashdata(flash);
+            setINP_link({ link: '' });
+            document.getElementById("link").value = '';
+            handleSearchRemove();
 
 
         }
@@ -1067,54 +1053,53 @@ const CamapignContentComponent = (props) => {
 
     }
 
-    // const SearchLink = async (e) => {
+    const YoutubeUrl = url => {
+        const regexes = {
+            video: /^.*(?:(?:youtu\.be\/|v\/|video\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|v(?:i)?=))([^#]*).*/,
+            shorts: /^.*(?:(\/shorts\/))([^#]*).*/,
+            channel: /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:c\/|user\/|@)?|youtube\.com\/)([^#]*)/
+        };
+        for (const [type, regex] of Object.entries(regexes)) {
+            const match = url.match(regex);
+            if (match) {
+                return {
+                    data: match[2] || match[5] || (match[1] && match[1].replace(/^@/, '')),
+                    type
+                };
+            }
+        }
+        return false;
+    };
 
-    //   let value = '';
-    //   if (e) {
-    //     value = e.target.value;
+    const SearchLink = async (e) => {
 
-    //   }
+        let value = document.getElementById("search").value;
+        if (typeof e === 'object') {
+            value = e.target.value;
+        }
 
-    //   console.log(value);
+        if (value) {
+            let val = YoutubeUrl(value);
+            console.log(val);
+            if (val.type === 'shorts' || val.type === 'video') {
+                setSearch(val.data)
+            }
+            else {
+                let flash = { error: "Search Incorrect!" };
+                setflashdata(flash);
+                handleSearchRemove()
+            }
+        }
+        else {
+            handleSearchRemove()
+        }
+    }
 
-    // let user_id = UserID.toString();
-
-    // var res = {};
-
-    // if (UserType === "-1") {
-    //     res = await fetch("/getBatchData", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify({
-    //             value
-    //         })
-    //     });
-    // }
-    // else {
-    //     res = await fetch("/getBatchData", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify({
-    //             value, user_id
-    //         })
-    //     });
-    // }
-
-
-    // const data = await res.json();
-
-    // if (res.status === 422 || !data) {
-    //     console.log(data);
-
-    // } else {
-    //     setBatchlist(data);
-
-    // }
-    // }
+    const handleSearchRemove = () => {
+        setSearch(null);
+        document.getElementById("search").value = '';
+        // getReeldataforGraph(getGarphType);
+    }
 
 
     return (
@@ -1138,10 +1123,6 @@ const CamapignContentComponent = (props) => {
                                 <p>
                                     Campaign Start From: {get_campaign_info.campaign_starts_on ? convertDate(get_campaign_info.campaign_starts_on) : get_campaign_info.campaign_starts_on}
                                 </p>
-                                {/* <p>
-                  Campaign Ends At: {get_campaign_info.campaign_ends_on ? convertDate(get_campaign_info.campaign_ends_on) : get_campaign_info.campaign_ends_on}
-                </p> */}
-
                             </h5>
 
                         }
@@ -1157,24 +1138,19 @@ const CamapignContentComponent = (props) => {
                                     if (get_flash_data['success']) {
                                         return (
                                             <>
-                                                {/* <div className="alert alert-success"> */}
                                                 <UncontrolledAlert color="success">
                                                     <span><strong> Success! </strong>{get_flash_data['success']}</span>
                                                 </UncontrolledAlert>
-
-                                                {/* </div> */}
                                             </>
                                         )
                                     }
                                     if (get_flash_data['error']) {
                                         return (
                                             <>
-                                                {/* <div className="alert alert-danger"> */}
                                                 <UncontrolledAlert color="danger">
                                                     <span><strong> Error! </strong>{get_flash_data['error']}</span>
                                                 </UncontrolledAlert>
 
-                                                {/* </div> */}
                                             </>
                                         )
                                     }
@@ -1221,13 +1197,17 @@ const CamapignContentComponent = (props) => {
 
                     </Row>
                     {/* <br /> */}
-                    {/* <Row>
+
+
+                    {/* search button */}
+                    <Row>
                         <Col>
                             <FormGroup>
-                                <Input id="search" name="search" type="text" onChange={getVideodataforGraph} placeholder="Search by Video Link or ShortCode. " />
+                                <Input id="search" name="search" type="text" onChange={SearchLink} placeholder="Search by Video Link...." />
+                                {getSearch && (<i className="bi bi-x-circle-fill" onClick={handleSearchRemove} style={{ float: "right", margin: "-30px 10px" }} ></i>)}
                             </FormGroup>
                         </Col>
-                    </Row> */}
+                    </Row>
 
                     <Row>
 
@@ -1288,30 +1268,11 @@ const CamapignContentComponent = (props) => {
                                 }
                             })()
                         }
-                        {/* <Col sm="2" lg="2" xl="2" xxl="2">
-              <Form >
-                <FormGroup>
-                  <Label for="startDate">From</Label>
-                  <Input type="date" name="startDate" id="startDate" max={date.toLocaleDateString('en-CA')} onChange={setdata} placeholder="date placeholder" />
-                </FormGroup>
-              </Form>
-            </Col>
-            <Col sm="2" lg="2" xl="2" xxl="2">
-              <Form >
-                <FormGroup>
-                  <Label for="endDate">To</Label>
-                  <Input type="date" name="endDate" id="endDate" max={date.toLocaleDateString('en-CA')} onChange={setdata} placeholder="date placeholder" />
-                </FormGroup>
-              </Form>
-            </Col>
-            <Col sm="2" lg="2" xl="2" xxl="2">
-              <Button color="primary search" onClick={selectdate}>Search</Button>
-            </Col> */}
 
                         {/* export button */}
                         <Col sm="3" lg="3" xl="2" xxl="2"  >
                             <FormGroup>
-                                <CSVLink {...csvReport} className="btn btn-primary export">Export Sheet</CSVLink>
+                                <CSVLink {...csvReport} id="export_sheet" className="btn btn-primary export">Export Sheet</CSVLink>
                             </FormGroup>
                         </Col>
                     </Row>
@@ -1319,7 +1280,7 @@ const CamapignContentComponent = (props) => {
 
                     {/* links, views, like and comment buttons */}
                     <Row>
-                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph(get_start_date, get_end_date, 'Traverse Links')}>
+                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph('Traverse Links')}>
                             <TopCards
                                 bg="bg-light-success text-success"
                                 title="Profit"
@@ -1329,7 +1290,7 @@ const CamapignContentComponent = (props) => {
 
                             />
                         </Col>
-                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph(get_start_date, get_end_date, 'Views')}>
+                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph('Views')}>
                             <TopCards
                                 bg="bg-light-danger text-danger"
                                 title="Refunds"
@@ -1338,7 +1299,7 @@ const CamapignContentComponent = (props) => {
                                 icon="bi bi-eye"
                             />
                         </Col>
-                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph(get_start_date, get_end_date, 'Likes')}>
+                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph('Likes')}>
                             <TopCards
                                 bg="bg-light-warning text-warning"
                                 title="New Project"
@@ -1347,7 +1308,7 @@ const CamapignContentComponent = (props) => {
                                 icon="bi bi-heart"
                             />
                         </Col>
-                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph(get_start_date, get_end_date, 'Comments')}>
+                        <Col sm="6" lg="3" onClick={() => getVideodataforGraph('Comments')}>
                             <TopCards
                                 bg="bg-light-info text-into"
                                 title="Sales"
@@ -1367,10 +1328,10 @@ const CamapignContentComponent = (props) => {
                                     return (
                                         <>
                                             <Col >
-                                                <SalesChart type={'Upload Links'} view={Object.values(getuploadLinkGarphData)} date={Object.values(getuploadLinkGraphDate)} />
+                                                {getuploadLinkGarphData.length > 0 && <LinkChart type={'Upload Links'} view={Object.values(getuploadLinkGarphData)} date={Object.values(getuploadLinkGraphDate)} />}
                                             </Col>
                                             <Col >
-                                                <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />
+                                                {getGarphData.length > 0 && <LinkChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />}
                                             </Col>
                                         </>
 
@@ -1379,7 +1340,7 @@ const CamapignContentComponent = (props) => {
                                 else {
                                     return (
                                         <Col >
-                                            <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />
+                                            {getGarphData.length > 0 && <SalesChart type={getGarphType} view={Object.values(getGarphData)} date={Object.values(getGraphDate)} />}
                                         </Col>
                                     )
                                 }
@@ -1391,7 +1352,7 @@ const CamapignContentComponent = (props) => {
                     {/* Table section */}
                     <Row>
                         <Col lg="12">
-                            <YoutubeTables tabledata={get_video_data_table} />
+                            {get_video_data_table.length > 0 && <YoutubeTables tabledata={get_video_data_table} />}
                         </Col>
                     </Row>
 

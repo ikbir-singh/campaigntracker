@@ -10,6 +10,7 @@ const campaign = require("../models/campaignSchema");
 const reel = require("../models/reelSchema");
 const youtube = require("../models/youtubeSchema");
 const cron = require("../models/cronSchema");
+const apiKeys = require("../models/apikeysSchema");
 const page = require("../models/pageSchema");
 const pagebatch = require("../models/pagebatchSchema");
 // const tournaments = require("../models/tournamentSchema");
@@ -817,29 +818,61 @@ router.delete("/deleteCampaign/:id", async (req, res) => {
 
 
 //get reellist
-router.get("/getReel/:project_id", async (req, res) => {
+router.get("/getReel", async (req, res) => {
     try {
-        const { project_id } = req.params;
-        // console.log(id);
+        const { project_id, searchtype } = req.query;
+        console.log(project_id);
+        console.log(searchtype);
+
         // const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1' }).sort({ reel_updated_at: -1 });
         // console.log(reeldata);
 
+        // if (searchtype !== 'null') {
+        //     console.log("search type: " + searchtype);
+        //     const reeldata = await reel.aggregate(
+        //         [
+        //             { $match: { project_id: project_id, reel_is_traverse: '1', reel_link: { $regex: searchtype, $options: "i" } } },
+        //             { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+        //             { $sort: { "doc.reel_updated_at": -1 } },
+        //         ],
+        //         { collation: { locale: "en_US", numericOrdering: true } }
+        //     )
+
+        //     res.status(201).json(reeldata);
+        // }
+        // else {
+        //     console.log("no search type");
+        //     const reeldata = await reel.aggregate(
+        //         [
+        //             { $match: { project_id: project_id, reel_is_traverse: '1' } },
+        //             { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+        //             { $sort: { "doc.reel_updated_at": -1 } },
+        //         ],
+        //         { collation: { locale: "en_US", numericOrdering: true } }
+        //     )
+
+        //     res.status(201).json(reeldata);
+        // }
         const reeldata = await reel.aggregate(
             [
-                { $match: { project_id: project_id, reel_is_traverse: '1' } },
+                ...(searchtype !== 'null' ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_link: { $regex: searchtype, $options: "i" } } }] : [{ $match: { project_id: project_id, reel_is_traverse: '1' } }]),
                 { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
                 { $sort: { "doc.reel_updated_at": -1 } },
             ],
             { collation: { locale: "en_US", numericOrdering: true } }
         )
 
+        // console.log(reeldata)
+
         res.status(201).json(reeldata);
+
     }
     catch (error) {
         res.status(422).json(error);
 
     }
 });
+
 //get videolist
 
 router.get("/getVideo/:campaign_id", async (req, res) => {
@@ -859,10 +892,11 @@ router.get("/getVideo/:campaign_id", async (req, res) => {
 
 //get reellist where
 router.post("/getReel", async (req, res) => {
-    const { project_id, start_date, end_date } = req.body;
+    const { project_id, start_date, end_date, searchtype } = req.body;
     // console.log("project_id: "+project_id)
     // console.log("start_date: "+start_date)
     // console.log("end_date: "+end_date)
+    // console.log("searchtype: "+searchtype)
 
     try {
         if (!project_id) {
@@ -870,20 +904,33 @@ router.post("/getReel", async (req, res) => {
         }
         else {
 
-            if (end_date && start_date) {
-                const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } }).sort({ reel_updated_at: -1 });
+            if (searchtype) {
+                const reeldata = await reel.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_link: { $regex: searchtype, $options: "i" } } }] : []),
+                        { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.reel_updated_at": -1 } },
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
                 // console.log(reeldata);
                 res.status(201).json(reeldata);
             }
-            else if (start_date) {
-                const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } }).sort({ reel_updated_at: -1 });
-                // console.log(reeldata)
+            else {
+                const reeldata = await reel.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } } }] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1' } }] : []),
+                        { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.reel_updated_at": -1 } },
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
+                // console.log(reeldata);
                 res.status(201).json(reeldata);
             }
-            else {
-                res.status(422).json(error);
-            }
-            // console.log(reeldata);
+
         }
     }
     catch (error) {
@@ -894,10 +941,11 @@ router.post("/getReel", async (req, res) => {
 
 //get videolist where
 router.post("/getVideo", async (req, res) => {
-    const { campaign_id, start_date, end_date } = req.body;
+    const { campaign_id, start_date, end_date, searchtype } = req.body;
     // console.log("campaign_id: "+campaign_id)
     // console.log("start_date: "+start_date)
     // console.log("end_date: "+end_date)
+    // console.log("searchtype: "+searchtype)
 
     try {
         if (!campaign_id) {
@@ -905,20 +953,32 @@ router.post("/getVideo", async (req, res) => {
         }
         else {
 
-            if (end_date && start_date) {
-                const videodata = await youtube.find({ campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } }).sort({ link_updated_at: -1 });
+            if (searchtype) {
+                const videodata = await youtube.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', video_link: { $regex: searchtype, $options: "i" } } }] : []),
+                        { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.link_updated_at": -1 } },
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
                 // console.log(videodata);
                 res.status(201).json(videodata);
             }
-            else if (start_date) {
-                const videodata = await youtube.find({ campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } }).sort({ link_updated_at: -1 });
-                // console.log(videodata)
+            else {
+                const videodata = await youtube.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1' } }] : []),
+                        { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.link_updated_at": -1 } },
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
+                // console.log(videodata);
                 res.status(201).json(videodata);
             }
-            else {
-                res.status(422).json(error);
-            }
-            // console.log(videodata);
         }
     }
     catch (error) {
@@ -930,10 +990,11 @@ router.post("/getVideo", async (req, res) => {
 
 //get reeldata for table 
 router.post("/getReelDataforTable", async (req, res) => {
-    const { project_id, start_date, end_date } = req.body;
+    const { project_id, start_date, end_date, searchtype } = req.body;
     // console.log("project_id: "+project_id)
     // console.log("start_date: "+start_date)
     // console.log("end_date: "+end_date)
+    // console.log("searchtype: " + searchtype)
 
     try {
         if (!project_id) {
@@ -941,66 +1002,35 @@ router.post("/getReelDataforTable", async (req, res) => {
         }
         else {
 
-            if (end_date && start_date) {
-                // const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } }).sort({ reel_play: -1 }).collation({ locale: "en_US", numericOrdering: true }).limit(5);
-
+            if (searchtype) {
                 const reeldata = await reel.aggregate(
                     [
-                        { $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } } },
+                        ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_link: { $regex: searchtype, $options: "i" } } }] : []),
                         { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
                         { $sort: { "doc.reel_play": -1 } },
                         { "$limit": 20 }
                     ],
                     { collation: { locale: "en_US", numericOrdering: true } }
                 )
-
 
                 // console.log(reeldata);
                 res.status(201).json(reeldata);
             }
-            else if (start_date) {
-                // const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } }).sort({ reel_play: -1 }).collation({ locale: "en_US", numericOrdering: true }).limit(5);
-
-                const reeldata = await reel.aggregate(
-                    [
-                        { $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } } },
-                        { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
-                        { $sort: { "doc.reel_play": -1 } },
-                        { "$limit": 20 }
-                    ],
-                    { collation: { locale: "en_US", numericOrdering: true } }
-                )
-
-
-                // console.log(reeldata)
-                res.status(201).json(reeldata);
-            }
-            else if (project_id) {
-                // const reeldata = await reel.find({ project_id: project_id, reel_is_traverse: '1' }).sort({ reel_play: -1 }).collation({ locale: "en_US", numericOrdering: true }).limit(5);
-                // // console.log(reeldata)
-
-                const reeldata = await reel.aggregate(
-                    [
-                        { $match: { project_id: project_id, reel_is_traverse: '1' } },
-                        //   { $sort: { reel_play : -1 } },
-                        { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
-                        { $sort: { "doc.reel_play": -1 } },
-                        //   { $sort: { reel_play : -1 } },
-                        { "$limit": 20 }
-                    ],
-                    { collation: { locale: "en_US", numericOrdering: true } }
-                )
-
-
-
-                // console.log(reeldata)
-
-                res.status(201).json(reeldata);
-            }
             else {
-                res.status(422).json(error);
+
+                const reeldata = await reel.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } } }] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1' } }] : []),
+                        { $group: { _id: "$reel_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.reel_play": -1 } },
+                        { "$limit": 20 }
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
+                // console.log(reeldata);
+                res.status(201).json(reeldata);
             }
-            // console.log(reeldata);
         }
     }
     catch (error) {
@@ -1009,12 +1039,14 @@ router.post("/getReelDataforTable", async (req, res) => {
     }
 });
 
+
 //get videodata for table 
 router.post("/getVideodataforTable", async (req, res) => {
-    const { campaign_id, start_date, end_date } = req.body;
+    const { campaign_id, start_date, end_date, searchtype } = req.body;
     // console.log("campaign_id: "+campaign_id)
     // console.log("start_date: "+start_date)
     // console.log("end_date: "+end_date)
+    // console.log("searchtype: "+searchtype)
 
     try {
         if (!campaign_id) {
@@ -1022,57 +1054,36 @@ router.post("/getVideodataforTable", async (req, res) => {
         }
         else {
 
-            if (end_date && start_date) {
-
+            if (searchtype) {
                 const videodata = await youtube.aggregate(
                     [
-                        { $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } } },
+                        ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', video_link: { $regex: searchtype, $options: "i" } } }] : []),
                         { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
                         { $sort: { "doc.video_view": -1 } },
                         { "$limit": 20 }
                     ],
                     { collation: { locale: "en_US", numericOrdering: true } }
                 )
-
 
                 // console.log(videodata);
                 res.status(201).json(videodata);
             }
-            else if (start_date) {
-
-                const videodata = await youtube.aggregate(
-                    [
-                        { $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } } },
-                        { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
-                        { $sort: { "doc.video_view": -1 } },
-                        { "$limit": 20 }
-                    ],
-                    { collation: { locale: "en_US", numericOrdering: true } }
-                )
-
-
-                // console.log(videodata)
-                res.status(201).json(videodata);
-            }
-            else if (campaign_id) {
-
-                const videodata = await youtube.aggregate(
-                    [
-                        { $match: { campaign_id: campaign_id, link_is_traverse: '1' } },
-                        { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
-                        { $sort: { "doc.video_view": -1 } },
-                        { "$limit": 20 }
-                    ],
-                    { collation: { locale: "en_US", numericOrdering: true } }
-                )
-                // console.log(videodata)
-
-                res.status(201).json(videodata);
-            }
             else {
-                res.status(422).json(error);
+
+                const videodata = await youtube.aggregate(
+                    [
+                        ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1' } }] : []),
+                        { $group: { _id: "$video_link", doc: { $last: "$$ROOT" }, count: { $sum: 1 } } },
+                        { $sort: { "doc.video_view": -1 } },
+                        { "$limit": 20 }
+                    ],
+                    { collation: { locale: "en_US", numericOrdering: true } }
+                )
+
+                // console.log(videodata);
+                res.status(201).json(videodata);
             }
-            // console.log(videodata);
+
         }
     }
     catch (error) {
@@ -1084,20 +1095,19 @@ router.post("/getVideodataforTable", async (req, res) => {
 //get reeldata for graph
 router.post("/getReelDetailsforGrpah", async (req, res) => {
 
-    const { project_id, start_date, end_date } = req.body;
+    const { project_id, start_date, end_date, searchtype } = req.body;
 
     // console.log(project_id)
     // console.log(start_date)
     // console.log(end_date)
-
+    // console.log("searchtype: " + searchtype)
 
     try {
         if (!project_id) {
             res.status(404).json("please fill the data");
         }
         else {
-
-            if (end_date && start_date) {
+            if (searchtype) {
                 const reeldata = await reel.aggregate([
                     {
                         $addFields: {
@@ -1106,7 +1116,7 @@ router.post("/getReelDetailsforGrpah", async (req, res) => {
                             }
                         }
                     },
-                    { $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } } },
+                    ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date }, reel_link: { $regex: searchtype, $options: "i" } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_link: { $regex: searchtype, $options: "i" } } }] : []),
                     {
                         $group: {
                             _id: "$reel_updated_at",
@@ -1119,62 +1129,38 @@ router.post("/getReelDetailsforGrpah", async (req, res) => {
                     }
                 ])
 
-                res.status(201).json(reeldata);
-            }
-            else if (start_date) {
-                const reeldata = await reel.aggregate([
-                    {
-                        $addFields: {
-                            reel_updated_at: {
-                                $arrayElemAt: [{ $split: ["$reel_updated_at", " "] }, 0]
-                            }
-                        }
-                    },
-                    { $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } } },
-                    {
-                        $group: {
-                            _id: "$reel_updated_at",
-                            data: { $addToSet: { reelview: '$reel_play', reellike: '$reel_like', reelcomment: "$reel_comment" } },
-                            links: { $sum: 1 },
-                        }
-                    },
-                    {
-                        $sort: { reel_updated_at: -1 }
-                    }
-                ])
-
-                res.status(201).json(reeldata);
-            }
-            else if (project_id) {
-
-                const reeldata = await reel.aggregate([
-                    { $match: { project_id: project_id, reel_is_traverse: '1' } },
-                    {
-                        $addFields: {
-                            reel_updated_at: {
-                                $arrayElemAt: [{ $split: ["$reel_updated_at", " "] }, 0]
-                            }
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: "$reel_updated_at",
-                            data: { $addToSet: { reelview: '$reel_play', reellike: '$reel_like', reelcomment: "$reel_comment" } },
-                            links: { $sum: 1 },
-                        }
-                    },
-                    {
-                        $sort: { reel_updated_at: -1 }
-                    }
-                ])
-
-                // console.log(reeldata)
-
+                // console.log(reeldata);
                 res.status(201).json(reeldata);
             }
             else {
-                res.status(422).json(error);
+
+                const reeldata = await reel.aggregate([
+                    {
+                        $addFields: {
+                            reel_updated_at: {
+                                $arrayElemAt: [{ $split: ["$reel_updated_at", " "] }, 0]
+                            }
+                        }
+                    },
+                    ...(end_date && start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { $lte: end_date, $gte: start_date } } },] : start_date ? [{ $match: { project_id: project_id, reel_is_traverse: '1', reel_updated_at: { '$regex': start_date } } }] : project_id ? [{ $match: { project_id: project_id, reel_is_traverse: '1' } }] : []),
+                    {
+                        $group: {
+                            _id: "$reel_updated_at",
+                            data: { $addToSet: { reelview: '$reel_play', reellike: '$reel_like', reelcomment: "$reel_comment" } },
+                            links: { $sum: 1 },
+                        }
+                    },
+                    {
+                        $sort: { reel_updated_at: -1 }
+                    }
+                ])
+
+                // console.log("reeldata")
+
+                res.status(201).json(reeldata);
             }
+
+
         }
     }
     catch (error) {
@@ -1187,11 +1173,12 @@ router.post("/getReelDetailsforGrpah", async (req, res) => {
 //get videodata for graph
 router.post("/getVideoDetailsforGrpah", async (req, res) => {
 
-    const { campaign_id, start_date, end_date } = req.body;
+    const { campaign_id, start_date, end_date, searchtype } = req.body;
 
     // console.log(campaign_id)
     // console.log(start_date)
     // console.log(end_date)
+    // console.log(searchtype)
 
 
     try {
@@ -1200,7 +1187,8 @@ router.post("/getVideoDetailsforGrpah", async (req, res) => {
         }
         else {
 
-            if (end_date && start_date) {
+
+            if (searchtype) {
                 const videodata = await youtube.aggregate([
                     {
                         $addFields: {
@@ -1209,7 +1197,7 @@ router.post("/getVideoDetailsforGrpah", async (req, res) => {
                             }
                         }
                     },
-                    { $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } } },
+                    ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date }, video_link: { $regex: searchtype, $options: "i" } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', video_link: { $regex: searchtype, $options: "i" } } }] : []),
                     {
                         $group: {
                             _id: "$link_updated_at",
@@ -1222,62 +1210,37 @@ router.post("/getVideoDetailsforGrpah", async (req, res) => {
                     }
                 ])
 
-                res.status(201).json(videodata);
-            }
-            else if (start_date) {
-                const videodata = await youtube.aggregate([
-                    {
-                        $addFields: {
-                            link_updated_at: {
-                                $arrayElemAt: [{ $split: ["$link_updated_at", " "] }, 0]
-                            }
-                        }
-                    },
-                    { $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } } },
-                    {
-                        $group: {
-                            _id: "$link_updated_at",
-                            data: { $addToSet: { videoview: '$video_view', videolike: '$video_like', videocomment: "$video_comment" } },
-                            links: { $sum: 1 },
-                        }
-                    },
-                    {
-                        $sort: { link_updated_at: -1 }
-                    }
-                ])
-
-                res.status(201).json(videodata);
-            }
-            else if (campaign_id) {
-
-                const videodata = await youtube.aggregate([
-                    { $match: { campaign_id: campaign_id, link_is_traverse: '1' } },
-                    {
-                        $addFields: {
-                            link_updated_at: {
-                                $arrayElemAt: [{ $split: ["$link_updated_at", " "] }, 0]
-                            }
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: "$link_updated_at",
-                            data: { $addToSet: { videoview: '$video_view', videolike: '$video_like', videocomment: "$video_comment" } },
-                            links: { $sum: 1 },
-                        }
-                    },
-                    {
-                        $sort: { link_updated_at: -1 }
-                    }
-                ])
-
-                // console.log(videodata)
-
+                // console.log(videodata);
                 res.status(201).json(videodata);
             }
             else {
-                res.status(422).json(error);
+
+                const videodata = await youtube.aggregate([
+                    {
+                        $addFields: {
+                            link_updated_at: {
+                                $arrayElemAt: [{ $split: ["$link_updated_at", " "] }, 0]
+                            }
+                        }
+                    },
+                    ...(end_date && start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { $lte: end_date, $gte: start_date } } }] : start_date ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1', link_updated_at: { '$regex': start_date } } }] : campaign_id ? [{ $match: { campaign_id: campaign_id, link_is_traverse: '1' } }] : []),
+                    {
+                        $group: {
+                            _id: "$link_updated_at",
+                            data: { $addToSet: { videoview: '$video_view', videolike: '$video_like', videocomment: "$video_comment" } },
+                            links: { $sum: 1 },
+                        }
+                    },
+                    {
+                        $sort: { link_updated_at: -1 }
+                    }
+                ])
+
+                // console.log("videodata")
+
+                res.status(201).json(videodata);
             }
+
         }
     }
     catch (error) {
@@ -2085,7 +2048,16 @@ function datetime(type, days) {
 
 }
 
+// function randomnumber(min, max) { // min and max included 
+//     return Math.floor(Math.random() * (max - min + 1) + min)
+// }
 
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
 
 
 // testing reel cron
@@ -2532,6 +2504,12 @@ router.get("/cronReelApi", async (request, response) => {
 
                     await addCron.save();
                     crondata = addCron
+
+
+                    var bulk = apiKeys.collection.initializeOrderedBulkOp();
+                    bulk.find({}).update({ $set: { hit_count: 0 } });
+                    bulk.execute();
+
                 }
                 else {
                     response.status(422).json(error)
@@ -2548,11 +2526,13 @@ router.get("/cronReelApi", async (request, response) => {
             const reeldata = await reel.find({ reel_is_traverse: '0', reel_created_at: { '$regex': date_needed } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true }).limit(cron_limit_set);
             console.log(reeldata.length);
 
-            var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
+            var bulk = apiKeys.collection.initializeOrderedBulkOp();
+            bulk.find({ api_status: 'in use' }).update({ $set: { api_status: 'active' } });
+            bulk.execute();
+
+            // var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
 
             for (let index = 0; index < reeldata.length; index++) {
-
-                let api_key = apikey[index % 3]
 
                 let reellink = reeldata[index];
 
@@ -2560,89 +2540,110 @@ router.get("/cronReelApi", async (request, response) => {
 
                     let reel_shortcode = reellink.reel_link.split("/")[4]
 
-                    var currentdatetime = datetime('currentdatetime')
+                    let prereel = await reel.findOne({ reel_link: { '$regex': reel_shortcode }, project_id: reellink.project_id, reel_created_at: { '$regex': todaydate } });
 
-                    let reel_link = reellink.reel_link;
-                    let project_id = reellink.project_id;
-                    let reel_is_traverse = "0";
-                    let reel_created_at = currentdatetime;
+                    if (!prereel) {
 
-                    // db.coll_reels_2.find().sort({_id:-1}).limit(1)
+                        var currentdatetime = datetime('currentdatetime')
 
-                    var reeldatacount = await reel.find().sort({ _id: -1 }).limit(1);
-                    let reel_id = (reeldatacount != null) ? parseInt(reeldatacount[0]["reel_id"]) + 1 : "1";  //reel id auto imcrement
+                        let reel_link = reellink.reel_link;
+                        let project_id = reellink.project_id;
+                        let reel_is_traverse = "0";
+                        let reel_created_at = currentdatetime;
+
+                        var reeldatacount = await reel.find().sort({ _id: -1 }).limit(1);
+                        let reel_id = (reeldatacount != null) ? parseInt(reeldatacount[0]["reel_id"]) + 1 : "1";  //reel id auto imcrement
 
 
-                    if (reel_link && project_id && reel_created_at) {
-                        let addReel = new reel({
-                            reel_id, reel_link, project_id, reel_is_traverse, reel_created_at
-                        });
-                        await addReel.save();
-                    }
 
-                    var options = {
-                        "method": "GET",
-                        "hostname": "instagram-profile1.p.rapidapi.com",
-                        "port": null,
-                        "path": `/getpost/${reel_shortcode}`,
-                        "headers": {
-                            "X-RapidAPI-Key": api_key,
-                            "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
-                            "useQueryString": true
+                        if (reel_link && project_id && reel_created_at) {
+                            let addReel = new reel({
+                                reel_id, reel_link, project_id, reel_is_traverse, reel_created_at
+                            });
+                            await addReel.save();
                         }
-                    };
 
-                    var req = http.request(options, function (res) {
-                        var chunks = [];
+                        const apikey = await apiKeys.find({ api_type: 'instagram/rapidapi', api_status: 'active' }, { api_key: 1, _id: 1, hit_count: 1 }).sort({ hit_count: 1 }).limit(1);
 
-                        res.on("data", function (chunk) {
-                            chunks.push(chunk);
-                        });
+                        if (apikey.length > 0) {
 
-                        res.on("end", async function () {
-                            const body = Buffer.concat(chunks);
-                            // console.log(JSON.parse(body.toString()));
+                            let api_key_data = apikey[0]
 
-                            var data = JSON.parse(body.toString());
+                            await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'in use', hit_count: (parseInt(api_key_data.hit_count) + 1), api_updated_on: Date() } }, {
+                                new: true
+                            });
 
-                            if (data.message) {
-                                let reel_error = data.message
-                                let reel_is_traverse = "2"
-                                let reel_updated_at = currentdatetime
+                            let api_key = api_key_data.api_key;
 
-                                var id = reellink._id;
+                            var options = {
+                                "method": "GET",
+                                "hostname": "instagram-profile1.p.rapidapi.com",
+                                "port": null,
+                                "path": `/getpost/${reel_shortcode}`,
+                                "headers": {
+                                    "X-RapidAPI-Key": api_key,
+                                    "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
+                                    "useQueryString": true
+                                }
+                            };
 
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
-                                });
-                            }
-                            else if (data.owner) {
-                                let reel_page_name = data.owner['username']
-                                let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
-                                let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
-                                let reel_like = data.media['like']
-                                let reel_comment = data.media['comment_count']
-                                let reel_caption = data.media['caption']
-                                let reel_date_of_posting = data.media['timestamp']
-                                let reel_is_traverse = "1"
+                            var req = http.request(options, function (res) {
+                                var chunks = [];
 
-                                let reel_updated_at = currentdatetime
-
-                                var id = reellink._id;
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
+                                res.on("data", function (chunk) {
+                                    chunks.push(chunk);
                                 });
 
-                            }
+                                res.on("end", async function () {
+                                    const body = Buffer.concat(chunks);
+                                    // console.log(JSON.parse(body.toString()));
+
+                                    var data = JSON.parse(body.toString());
+
+                                    if (data.message) {
+                                        let reel_error = data.message
+                                        let reel_is_traverse = "2"
+                                        let reel_updated_at = currentdatetime
+
+                                        var id = reellink._id;
+
+                                        // console.log(id)
+                                        await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                            new: true
+                                        });
+                                    }
+                                    else if (data.owner) {
+                                        let reel_page_name = data.owner['username']
+                                        let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
+                                        let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
+                                        let reel_like = data.media['like']
+                                        let reel_comment = data.media['comment_count']
+                                        let reel_caption = data.media['caption']
+                                        let reel_date_of_posting = data.media['timestamp']
+                                        let reel_is_traverse = "1"
+
+                                        let reel_updated_at = currentdatetime
+
+                                        var id = reellink._id;
+                                        // console.log(id)
+                                        await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                            new: true
+                                        });
+
+                                    }
 
 
-                        });
-                    });
+                                });
+                            });
 
-                    req.end();
-                    await sleep(1500);
+                            req.end();
+                            await sleep(1500);
+
+                            await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'active', api_updated_on: Date() } }, {
+                                new: true
+                            });
+                        }
+                    }
 
                 }
 
@@ -2687,119 +2688,140 @@ router.get("/cronReelTraverse", async (request, response) => {
 
         let todaydate = datetime('currentdate');
 
-        var crondata = {};
-        if (todaydate) {
-            crondata = await cron.findOne({ cron_traverse_status: '2', cron_created_at: todaydate });
-            if (!crondata) {
-                const cron_total_links = await reel.find({ reel_is_traverse: '2', reel_updated_at: { '$regex': todaydate } }).count();
-                if (cron_total_links) {
-                    var cron_limit_set = Math.round(parseInt(cron_total_links) / 2);
-                    const crondatacount = (await cron.findOne().sort({ _id: -1 }).limit(1));
-                    const cron_id = (crondatacount != null) ? parseInt(crondatacount["cron_id"]) + 1 : "1";  //cron id auto imcrement
-                    const cron_created_at = todaydate;
-                    const cron_traverse_status = 2;
+        // var crondata = {};
+        // if (todaydate) {
+        //     crondata = await cron.findOne({ cron_traverse_status: '2', cron_created_at: todaydate });
+        //     if (!crondata) {
+        //         const cron_total_links = await reel.find({ reel_is_traverse: '2', reel_updated_at: { '$regex': todaydate } }).count();
+        //         if (cron_total_links) {
+        //             var cron_limit_set = Math.round(parseInt(cron_total_links) / 2);
+        //             const crondatacount = (await cron.findOne().sort({ _id: -1 }).limit(1));
+        //             const cron_id = (crondatacount != null) ? parseInt(crondatacount["cron_id"]) + 1 : "1";  //cron id auto imcrement
+        //             const cron_created_at = todaydate;
+        //             const cron_traverse_status = 2;
 
-                    const addCron = new cron({
-                        cron_id, cron_total_links, cron_limit_set, cron_traverse_status, cron_created_at
-                    });
+        //             const addCron = new cron({
+        //                 cron_id, cron_total_links, cron_limit_set, cron_traverse_status, cron_created_at
+        //             });
 
-                    await addCron.save();
-                    crondata = addCron
-                }
-                else {
-                    response.status(422).json(error)
-                }
-            }
-        }
+        //             await addCron.save();
+        //             crondata = addCron
+        //         }
+        //         else {
+        //             response.status(422).json(error)
+        //         }
+        //     }
+        // }
 
 
         // to get date one day previous
         let date_needed = todaydate;
 
         if (date_needed && crondata) {
-            var cron_limit_set = crondata.cron_limit_set;
+            // var cron_limit_set = crondata.cron_limit_set;
 
-            const reeldata = await reel.find({ reel_is_traverse: '2', reel_updated_at: { '$regex': date_needed } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true }).limit(cron_limit_set);
+            const reeldata = await reel.find({ reel_is_traverse: '2', reel_updated_at: { '$regex': date_needed } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true });
             console.log(reeldata.length);
 
-            var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
+            // var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
+
+            var bulk = apiKeys.collection.initializeOrderedBulkOp();
+            bulk.find({ api_status: 'in use' }).update({ $set: { api_status: 'active' } });
+            bulk.execute();
 
             for (let index = 0; index < reeldata.length; index++) {
 
-                let api_key = apikey[index % 3]
+                // let api_key = apikey[index % 3]
 
                 let reellink = reeldata[index];
 
                 if (reellink.reel_link.split("/")[4]) {
 
-                    let reel_shortcode = reellink.reel_link.split("/")[4]
+                    const apikey = await apiKeys.find({ api_type: 'instagram/rapidapi', api_status: 'active' }, { api_key: 1, _id: 1, hit_count: 1 }).sort({ hit_count: 1 }).limit(1);
 
-                    var currentdatetime = datetime('currentdatetime')
+                    if (apikey.length > 0) {
 
-                    var options = {
-                        "method": "GET",
-                        "hostname": "instagram-profile1.p.rapidapi.com",
-                        "port": null,
-                        "path": `/getpost/${reel_shortcode}`,
-                        "headers": {
-                            "X-RapidAPI-Key": api_key,
-                            "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
-                            "useQueryString": true
-                        }
+                        let api_key_data = apikey[0]
 
-                    };
-
-                    var req = http.request(options, function (res) {
-                        var chunks = [];
-
-                        res.on("data", function (chunk) {
-                            chunks.push(chunk);
+                        await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'in use', hit_count: (parseInt(api_key_data.hit_count) + 1), api_updated_on: Date() } }, {
+                            new: true
                         });
 
-                        res.on("end", async function () {
-                            const body = Buffer.concat(chunks);
-                            // console.log(JSON.parse(body.toString()));
+                        let api_key = api_key_data.api_key;
 
-                            var data = JSON.parse(body.toString());
+                        let reel_shortcode = reellink.reel_link.split("/")[4]
 
-                            if (data.message) {
-                                let reel_error = data.message
-                                let reel_is_traverse = "3"
-                                let reel_updated_at = currentdatetime
+                        var currentdatetime = datetime('currentdatetime')
 
-                                var id = reellink._id;
-
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
-                                });
-                            }
-                            else if (data.owner) {
-                                let reel_page_name = data.owner['username']
-                                let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
-                                let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
-                                let reel_like = data.media['like']
-                                let reel_comment = data.media['comment_count']
-                                let reel_caption = data.media['caption']
-                                let reel_date_of_posting = data.media['timestamp']
-                                let reel_is_traverse = "1"
-
-                                let reel_updated_at = currentdatetime
-
-                                var id = reellink._id;
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
-                                });
-
+                        var options = {
+                            "method": "GET",
+                            "hostname": "instagram-profile1.p.rapidapi.com",
+                            "port": null,
+                            "path": `/getpost/${reel_shortcode}`,
+                            "headers": {
+                                "X-RapidAPI-Key": api_key,
+                                "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
+                                "useQueryString": true
                             }
 
+                        };
 
+                        var req = http.request(options, function (res) {
+                            var chunks = [];
+
+                            res.on("data", function (chunk) {
+                                chunks.push(chunk);
+                            });
+
+                            res.on("end", async function () {
+                                const body = Buffer.concat(chunks);
+                                // console.log(JSON.parse(body.toString()));
+
+                                var data = JSON.parse(body.toString());
+
+                                if (data.message) {
+                                    let reel_error = data.message
+                                    let reel_is_traverse = "3"
+                                    let reel_updated_at = currentdatetime
+
+                                    var id = reellink._id;
+
+                                    // console.log(id)
+                                    await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                        new: true
+                                    });
+                                }
+                                else if (data.owner) {
+                                    let reel_page_name = data.owner['username']
+                                    let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
+                                    let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
+                                    let reel_like = data.media['like']
+                                    let reel_comment = data.media['comment_count']
+                                    let reel_caption = data.media['caption']
+                                    let reel_date_of_posting = data.media['timestamp']
+                                    let reel_is_traverse = "1"
+
+                                    let reel_updated_at = currentdatetime
+
+                                    var id = reellink._id;
+                                    // console.log(id)
+                                    await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                        new: true
+                                    });
+
+                                }
+
+
+                            });
                         });
-                    });
 
-                    req.end();
-                    await sleep(1000);
+                        req.end();
+                        await sleep(1000);
+
+                        await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'active', api_updated_on: Date() } }, {
+                            new: true
+                        });
+                    }
 
                 }
 
@@ -2852,83 +2874,104 @@ router.get("/cronReelRetry", async (request, response) => {
             const reeldata = await reel.find({ reel_is_traverse: '3', reel_updated_at: { '$regex': date_needed } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true });
             console.log(reeldata.length);
 
-            var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
+            // var apikey = ['29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57', '98313acb74mshb662220473bc42bp11c728jsn1d8abc671b3b', 'c6cf21ca34msh526fcb983fa64bap1cb2dajsnb3f1993739d4']
+
+            var bulk = apiKeys.collection.initializeOrderedBulkOp();
+            bulk.find({ api_status: 'in use' }).update({ $set: { api_status: 'active' } });
+            bulk.execute();
 
             for (let index = 0; index < reeldata.length; index++) {
 
-                let api_key = apikey[index % 3]
+                // let api_key = apikey[index % 3]
 
                 let reellink = reeldata[index];
 
                 if (reellink.reel_link.split("/")[4]) {
 
-                    let reel_shortcode = reellink.reel_link.split("/")[4]
+                    const apikey = await apiKeys.find({ api_type: 'instagram/rapidapi', api_status: 'active' }, { api_key: 1, _id: 1, hit_count: 1 }).sort({ hit_count: 1 }).limit(1);
 
-                    var currentdatetime = datetime('currentdatetime')
+                    if (apikey.length > 0) {
 
-                    var options = {
-                        "method": "GET",
-                        "hostname": "instagram-profile1.p.rapidapi.com",
-                        "port": null,
-                        "path": `/getpost/${reel_shortcode}`,
-                        "headers": {
-                            "X-RapidAPI-Key": api_key,
-                            "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
-                            "useQueryString": true
-                        }
-                    };
+                        let api_key_data = apikey[0]
 
-                    var req = http.request(options, function (res) {
-                        var chunks = [];
-
-                        res.on("data", function (chunk) {
-                            chunks.push(chunk);
+                        await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'in use', hit_count: (parseInt(api_key_data.hit_count) + 1), api_updated_on: Date() } }, {
+                            new: true
                         });
 
-                        res.on("end", async function () {
-                            const body = Buffer.concat(chunks);
-                            // console.log(JSON.parse(body.toString()));
+                        let api_key = api_key_data.api_key;
 
-                            var data = JSON.parse(body.toString());
+                        let reel_shortcode = reellink.reel_link.split("/")[4]
 
-                            if (data.message) {
-                                let reel_error = data.message
-                                let reel_is_traverse = "3"
-                                let reel_updated_at = currentdatetime
+                        var currentdatetime = datetime('currentdatetime')
 
-                                var id = reellink._id;
-
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
-                                });
+                        var options = {
+                            "method": "GET",
+                            "hostname": "instagram-profile1.p.rapidapi.com",
+                            "port": null,
+                            "path": `/getpost/${reel_shortcode}`,
+                            "headers": {
+                                "X-RapidAPI-Key": api_key,
+                                "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
+                                "useQueryString": true
                             }
-                            else if (data.owner) {
-                                let reel_page_name = data.owner['username']
-                                let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
-                                let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
-                                let reel_like = data.media['like']
-                                let reel_comment = data.media['comment_count']
-                                let reel_caption = data.media['caption']
-                                let reel_date_of_posting = data.media['timestamp']
-                                let reel_is_traverse = "1"
+                        };
 
-                                let reel_updated_at = currentdatetime
+                        var req = http.request(options, function (res) {
+                            var chunks = [];
 
-                                var id = reellink._id;
-                                // console.log(id)
-                                await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
-                                    new: true
-                                });
+                            res.on("data", function (chunk) {
+                                chunks.push(chunk);
+                            });
 
-                            }
+                            res.on("end", async function () {
+                                const body = Buffer.concat(chunks);
+                                // console.log(JSON.parse(body.toString()));
+
+                                var data = JSON.parse(body.toString());
+
+                                if (data.message) {
+                                    let reel_error = data.message
+                                    let reel_is_traverse = "3"
+                                    let reel_updated_at = currentdatetime
+
+                                    var id = reellink._id;
+
+                                    // console.log(id)
+                                    await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                        new: true
+                                    });
+                                }
+                                else if (data.owner) {
+                                    let reel_page_name = data.owner['username']
+                                    let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
+                                    let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
+                                    let reel_like = data.media['like']
+                                    let reel_comment = data.media['comment_count']
+                                    let reel_caption = data.media['caption']
+                                    let reel_date_of_posting = data.media['timestamp']
+                                    let reel_is_traverse = "1"
+
+                                    let reel_updated_at = currentdatetime
+
+                                    var id = reellink._id;
+                                    // console.log(id)
+                                    await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                        new: true
+                                    });
+
+                                }
 
 
+                            });
                         });
-                    });
 
-                    req.end();
-                    await sleep(1500);
+                        req.end();
+                        await sleep(1500);
+
+                        await apiKeys.findByIdAndUpdate(api_key_data._id, { $set: { api_status: 'active', api_updated_on: Date() } }, {
+                            new: true
+                        });
+                    }
 
                 }
 
@@ -3226,7 +3269,7 @@ router.get("/cronYoutubeVideoApi", async (request, response) => {
     try {
 
         // to get date one day previous
-        // let date_needed = datetime('currentdate');
+        let todaydate = datetime('currentdate');
 
         let date_needed = datetime('yesterdaydate')
 
@@ -3234,6 +3277,8 @@ router.get("/cronYoutubeVideoApi", async (request, response) => {
 
             const youtubedata = await youtube.find({ link_is_traverse: '0', link_created_at: { '$regex': date_needed } }, { video_link: 1, _id: 1, campaign_id: 1 }).sort({ video_id: 1 }).collation({ locale: "en_US", numericOrdering: true });
             console.log(youtubedata.length);
+
+            shuffle(youtubedata);
 
             for (let index = 0; index < youtubedata.length; index++) {
 
@@ -3244,7 +3289,6 @@ router.get("/cronYoutubeVideoApi", async (request, response) => {
                 var currentdatetime = datetime('currentdatetime')
 
                 var link_info = YoutubeUrl(videolink.video_link);
-
 
                 if (!link_info) {
 
@@ -3269,52 +3313,56 @@ router.get("/cronYoutubeVideoApi", async (request, response) => {
 
                 else {
 
-                    var video_details = ((await youtubevideodetails(link_info.data)).length > 0 ? (await youtubevideodetails(link_info.data))[0] : null);
-
                     let video_link = videolink.video_link;
                     let campaign_id = videolink.campaign_id;
                     let link_is_traverse = "0";
                     let link_created_at = currentdatetime;
 
-                    var videodatacount = await youtube.find().sort({ _id: -1 }).limit(1);
-                    let video_id = (videodatacount != null) ? parseInt(videodatacount[0]["video_id"]) + 1 : "1";  //video id auto imcrement
+                    let prelink = await youtube.findOne({ video_link: video_link, campaign_id: campaign_id, link_created_at: { '$regex': todaydate } });
 
-                    if (video_link && campaign_id && link_created_at) {
-                        let addlink = new youtube({
-                            video_id, video_link, campaign_id, link_is_traverse, link_created_at
-                        });
-                        await addlink.save();
+                    if (!prelink) {
+
+                        var videodatacount = await youtube.find().sort({ _id: -1 }).limit(1);
+                        let video_id = (videodatacount != null) ? parseInt(videodatacount[0]["video_id"]) + 1 : "1";  //video id auto imcrement
+
+                        if (video_link && campaign_id && link_created_at) {
+                            let addlink = new youtube({
+                                video_id, video_link, campaign_id, link_is_traverse, link_created_at
+                            });
+                            await addlink.save();
+                        }
+
+                        var video_details = ((await youtubevideodetails(link_info.data)).length > 0 ? (await youtubevideodetails(link_info.data))[0] : null);
+
+                        if (!video_details) {
+
+                            let link_error = "Some Error in Api or may be link is not correct."
+                            let link_is_traverse = "2"
+                            let link_updated_at = currentdatetime
+
+                            await youtube.findByIdAndUpdate(id, { $set: { link_error: link_error, link_is_traverse: link_is_traverse, link_updated_at: link_updated_at } }, {
+                                new: true
+                            });
+                        }
+                        else {
+                            let video_channel_id = video_details.snippet.channelId
+                            let video_channel_name = video_details.snippet.channelTitle
+                            let video_view = (video_details.statistics.viewCount ? video_details.statistics.viewCount : null)
+                            let video_like = (video_details.statistics.likeCount ? video_details.statistics.likeCount : null)
+                            let video_comment = (video_details.statistics.commentCount ? video_details.statistics.commentCount : null)
+                            let video_title = video_details.snippet.title
+                            let video_date_of_posting = video_details.snippet.publishedAt
+                            let link_is_traverse = "1"
+
+                            let link_updated_at = currentdatetime
+
+                            await youtube.findByIdAndUpdate(id, { $set: { video_channel_id: video_channel_id, video_channel_name: video_channel_name, video_view: video_view, video_like: video_like, video_comment: video_comment, video_title: video_title, video_date_of_posting: video_date_of_posting, link_is_traverse: link_is_traverse, link_updated_at: link_updated_at } }, {
+                                new: true
+                            });
+                        }
+
+                        await sleep(1000);
                     }
-
-
-                    if (!video_details) {
-
-                        let link_error = "Some Error in Api or mAy be link is not correct."
-                        let link_is_traverse = "2"
-                        let link_updated_at = currentdatetime
-
-                        await youtube.findByIdAndUpdate(id, { $set: { link_error: link_error, link_is_traverse: link_is_traverse, link_updated_at: link_updated_at } }, {
-                            new: true
-                        });
-                    }
-                    else {
-                        let video_channel_id = video_details.snippet.channelId
-                        let video_channel_name = video_details.snippet.channelTitle
-                        let video_view = (video_details.statistics.viewCount ? video_details.statistics.viewCount : null)
-                        let video_like = (video_details.statistics.likeCount ? video_details.statistics.likeCount : null)
-                        let video_comment = (video_details.statistics.commentCount ? video_details.statistics.commentCount : null)
-                        let video_title = video_details.snippet.title
-                        let video_date_of_posting = video_details.snippet.publishedAt
-                        let link_is_traverse = "1"
-
-                        let link_updated_at = currentdatetime
-
-                        await youtube.findByIdAndUpdate(id, { $set: { video_channel_id: video_channel_id, video_channel_name: video_channel_name, video_view: video_view, video_like: video_like, video_comment: video_comment, video_title: video_title, video_date_of_posting: video_date_of_posting, link_is_traverse: link_is_traverse, link_updated_at: link_updated_at } }, {
-                            new: true
-                        });
-                    }
-
-                    await sleep(1000);
                 }
 
             }
@@ -3331,7 +3379,6 @@ router.get("/cronYoutubeVideoApi", async (request, response) => {
         response.status(422).json(error)
     }
 });
-
 
 router.get("/SendEmail", async (request, response) => {
 
@@ -3408,6 +3455,9 @@ const youtubevideodetails = async (videoid) => {
     const titles = result.data.items;
     return titles;
 }
+
+
+
 
 const getAccessToken = async (username) => {
 
@@ -4177,151 +4227,85 @@ router.get("/checkLink", async (request, response) => {
 });
 
 
+const InstagramDetails = async (url, type) => {
+    if (!url) {
+        return;
+    }
 
-router.get("/testlink", async (request, response) => {
+    var regex;
+    if (type === 'profile' || type === 'page') {
+        regex = new RegExp("web_profile_info", "i")
+    }
+    else if (type === 'post' || type === 'reel' || type === 'video') {
+        regex = new RegExp("graphql/query", "i")
+    }
+    else {
+        return 'Type is not defined in function';
+    }
+
+    const puppeteer = require('puppeteer');
+    const xhrResponse = [];
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    // Enable network monitoring
+    await page.setRequestInterception(true);
+
+    // Listen for XHR requests and push their URLs to an array
+    page.on('request', request => {
+        if (request.resourceType() === 'xhr') {
+
+            if (regex.test(request.url())) {
+
+                const req = require('request');
+
+                const options = {
+                    url: request.url(),
+                    headers: request.headers(),
+                };
+
+                req(options, (error, response, body) => {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        xhrResponse.push(JSON.parse(body))
+                    }
+                });
+            }
+        }
+        request.continue();
+    });
+
+    // Navigate to the URL
+    await page.goto(url);
+
+    // Wait for some time to capture all XHR requests
+    await page.waitForTimeout(1000);
+
+    await browser.close();
+
+    return xhrResponse
+}
+
+router.get("/testlink", async (req, res) => {
     try {
 
-        console.log("sfsd")
+        // const url = "https://www.instagram.com/yrf/";
+        const url = "https://www.instagram.com/reel/CpUKs86IWkY/";
 
-        // const instaTouch = require('instatouch');
+        // const type = "profile";
+        const type = "reel";
 
-        // (async () => {
-        //     try {
-        //         const options = { count: 200 };
-        //         const likers = await instaTouch.likers('B7wOyffArc5', options);
-        //         console.log(likers);
-        //         response.status(422).json(likers)
-        //     } catch (error) {
-        //         console.log(error);
-        //         response.status(422).json(error)
-        //     }
-        // })();
+        const response = await InstagramDetails(url, type);
 
-        // let { igApi } = require("insta-fetcher");
-
-        // // some example with proxy, but i never test it
-        // let ig = new igApi("54109134244%3AdDjEHhAxVycvOI%3A8%3AAYc6yf8VxFhDJ5Hw5GpuajFUdYekq66iR7kw2aholg", false, {
-        //     proxy: {
-        //         host: 'https://www.instagram.com/login',
-        //         port: 80,
-        //         auth: { username: 'punjabi_chatpat', password: 'punjabi12#$' }
-        //     }
-        // });
-
-        // // Public post
-        // ig.fetchPost("https://www.instagram.com/reel/CXhW_4sp32Z/").then((res) => {
-        //     console.log(res);
-        // });
-
-        // const ig  = require("instagram-scraping");
-
-        // // ig.scrapeComment('CPHnIGbBh1k').then(result => {
-        // //     console.dir(result);
-        // // });
-        // ig.scrapeUserPage('jcvrnd19').then(result => {
-        //     // console.dir(result);
-        //     response.status(201).json(result)
-        // });
-
-
-        /* Create the base function to be ran */
-
-        const cheerio = require("cheerio");
-        const request = require("request-promise");
-
-
-        const start = async (username) => {
-            /* Here you replace the username with your actual instagram username that you want to check */
-            const BASE_URL = `https://www.instagram.com/${username}/`;
-
-            /* Send the request and get the html content */
-            let response = await request(BASE_URL, {
-                accept:
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-                "accept-encoding": "gzip, deflate, br",
-                "accept-language":
-                    "en-US,en;q=0.9,fr;q=0.8,ro;q=0.7,ru;q=0.6,la;q=0.5,pt;q=0.4,de;q=0.3",
-                "cache-control": "max-age=0",
-                "upgrade-insecure-requests": "1",
-                "user-agent":
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",
-            });
-
-            /* Initiate Cheerio with the response */
-            let $ = cheerio.load(response);
-
-            // /* Get the proper script of the html page which contains the json */
-            let script = $("script").eq(4).html();
-            console.log(script)
-
-            // /* Traverse through the JSON of instagram response */
-            // let {
-            //     entry_data: {
-            //         ProfilePage: {
-            //             [0]: {
-            //                 graphql: { user },
-            //             },
-            //         },
-            //     },
-            // } = JSON.parse(/window\._sharedData = (.+);/g.exec(script)[1]);
-
-            // /* Output the data */
-            // return user;
-            return script;
-        };
-
-        start('yrf').then((data) => {
-            // console.log(data);
-            response.status(201).json(data)
-        });
+        res.status(201).json(response)
 
     }
     catch (error) {
-        response.status(422).json(error)
+        res.status(422).json(error)
     }
 });
-
-
-// router.get("/testlink", async (request, response) => {
-//     try {
-
-//         console.log("sfsd")
-
-//         let url = "https://www.instagram.com/reel/Cny0MMJIRjf/?__a=1&__d=dis";
-
-//         http.get(url, (res) => {
-//             let body = "";
-
-//             res.on("data", (chunk) => {
-//                 body += chunk;
-//             });
-
-//             res.on("end", () => {
-//                 try {
-//                     let json = JSON.parse(body);
-//                     // do something with JSON
-//                     console.log(json)
-//                     response.status(201).json(json)
-//                 } catch (error) {
-//                     console.error(error.message);
-//                     response.status(422).json("error")
-//                 };
-//             });
-
-//         }).on("error", (error) => {
-//             console.error(error.message);
-//             response.status(422).json(error)
-//         });
-
-//     }
-//     catch (error) {
-//         response.status(422).json(error)
-//     }
-// });
-
-
-
-
 
 
 module.exports = router;

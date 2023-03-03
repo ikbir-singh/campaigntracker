@@ -1,8 +1,8 @@
 var mongoose = require('mongoose');
 
-// mongoose.connect('mongodb://localhost/instascrap');
+mongoose.connect('mongodb://localhost/instascrap');
 // mongoose.connect('mongodb+srv://ikbirsingh27:qazmlp12345@cluster0.wz5gcw1.mongodb.net/instascrap');
-mongoose.connect('mongodb+srv://aryan-mehta524:ikbirsingh1%40@aryancluster.7bnqahi.mongodb.net/instascrap');
+// mongoose.connect('mongodb+srv://aryan-mehta524:ikbirsingh1%40@aryancluster.7bnqahi.mongodb.net/instascrap');
 
 //try
 
