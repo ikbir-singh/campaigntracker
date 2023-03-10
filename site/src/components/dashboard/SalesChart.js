@@ -9,8 +9,8 @@ const SalesChart = (props) => {
 
   if (view.length && date.length) {
 
-    newarr = [view[0]];
-    // newarr = [0];
+    // newarr = [view[0]];
+    newarr = [0];
     for (let i = 1; i < view.length; i++) {
       newarr.push((view[i] - view[i - 1] > 0 ? view[i] - view[i - 1] : 0 ));
     }

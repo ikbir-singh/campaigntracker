@@ -80,16 +80,16 @@ router.get("/", (req, res) => {
 router.get("/testing", async (req, res) => {
     try {
 
-
-        const String = "\n" + Date();
-        fs.appendFile("./foo.txt", String, 'utf8', function (err) {
-            if (err) {
-                res.status(422).json(err);
-            }
-            else {
-                res.status(201).json("Success");
-            }
-        });
+        res.status(201).json("Success");
+        // const String = "\n" + Date();
+        // fs.appendFile("./foo.txt", String, 'utf8', function (err) {
+        //     if (err) {
+        //         res.status(422).json(err);
+        //     }
+        //     else {
+        //         res.status(201).json("Success");
+        //     }
+        // });
     }
     catch (error) {
         res.status(422).json(error);
@@ -2044,6 +2044,19 @@ function datetime(type, days) {
 
         return require_date;
     }
+    if (type === 'customdatetime') {
+
+        let today = new Date();
+        let requiredate = new Date(today);
+        requiredate.setDate(today.getDate() - days);
+        let date = requiredate.toLocaleString('en-GB').split('/');
+        let time = requiredate.toLocaleString('en-GB').split('/')[2].split(',');
+
+        date = time[0] + "-" + date[1] + "-" + date[0];
+        time = time[1];
+        return date + " " + time;
+
+    }
 
 
 }
@@ -2059,59 +2072,394 @@ function shuffle(array) {
     }
 }
 
+// const InstagramDetails = async (shortcode, type) => {
+//     if (!shortcode) {
+//         return;
+//     }
+
+//     var url;
+//     var checkLinkExists = false;
+//     var regcheckLinkExists = new RegExp("get_ruling_for_content", "i")
+//     var regex;
+//     if (type === 'profile' || type === 'page') {
+//         regex = new RegExp("web_profile_info", "i")
+//         url = `https://www.instagram.com/${shortcode}/`
+//     }
+//     else if (type === 'post' || type === 'reel' || type === 'video') {
+//         regex = new RegExp("graphql/query", "i")
+//         url = `https://www.instagram.com/p/${shortcode}/`
+//     }
+//     else {
+//         return 'Type is not defined in function';
+//     }
+
+//     const puppeteer = require('puppeteer');
+//     const axios = require('axios');
+
+//     const xhrResponse = [];
+
+//     const browser = await puppeteer.launch();
+//     // const page = await browser.newPage();
+//     // await page.goto('https://www.instagram.com/accounts/login/');
+
+//     // // enter your login credentials
+//     // const username = 'kidaan_ferr';
+//     // const password = 'punjabi12#$';
+
+//     // // wait for the username field to appear and fill it out
+//     // await page.waitForSelector('input[name="username"]');
+//     // await page.type('input[name="username"]', username);
+
+//     // // wait for the password field to appear and fill it out
+//     // await page.waitForSelector('input[name="password"]');
+//     // await page.type('input[name="password"]', password);
+
+//     // // click the login button
+//     // await page.click('button[type="submit"]');
+//     // await page.waitForNavigation(); // wait for the page to load after login
+
+//     // // handle "save login info" popup if it appears
+//     // try {
+//     //     await page.waitForSelector('button[type="button"]');
+//     //     await page.click('button[type="button"]');
+//     // } catch (error) {
+//     //     // the popup didn't appear
+//     // }
+
+//     // // handle "turn on notifications" popup if it appears
+//     // try {
+//     //     await page.waitForSelector('button[type="button"]');
+//     //     await page.click('button[type="button"]');
+//     // } catch (error) {
+//     //     // the popup didn't appear
+//     // }
+
+//     // // save login cookies to avoid logging in every time
+//     // const cookies = await page.cookies();
+//     // console.log(cookies);
+
+
+//     const newpage = await browser.newPage();
+
+//     // Enable network monitoring
+//     await newpage.setRequestInterception(true);
+
+//     // Listen for XHR requests and push their URLs to an array
+//     newpage.on('request', async request => {
+//         if (request.resourceType() === 'xhr') {
+
+//             if (regcheckLinkExists.test(request.url())) {
+//                 checkLinkExists = true;
+//             }
+
+//             if (regex.test(request.url())) {
+
+//                 const options = {
+//                     url: request.url(),
+//                     headers: request.headers(),
+//                 };
+
+//                 try {
+//                     const { data } = await axios(options);
+//                     xhrResponse.push(data);
+//                 } catch (error) {
+//                     // console.error(error);
+//                 }
+//             }
+//         }
+//         request.continue();
+//     });
+
+//     // Navigate to the URL
+//     await newpage.goto(url);
+
+//     // Wait for some time to capture all XHR requests
+//     await newpage.waitForTimeout(5000);
+
+//     await browser.close();
+
+//     console.log("validLink: " + checkLinkExists);
+//     console.log(xhrResponse);
+
+//     return { response: xhrResponse, validLink: checkLinkExists };
+// }
+
+
+const InstagramDetails = async (shortcode, type) => {
+    if (!shortcode) {
+        return;
+    }
+
+
+
+
+    var url;
+    var checkLinkExists = false;
+    var regcheckLinkExists = new RegExp("get_ruling_for_content", "i")
+    var regex;
+    if (type === 'profile' || type === 'page') {
+        regex = new RegExp("web_profile_info", "i")
+        url = `https://www.instagram.com/${shortcode}/`
+    }
+    else if (type === 'post' || type === 'reel' || type === 'video') {
+        regex = new RegExp("graphql/query", "i")
+        url = `https://www.instagram.com/p/${shortcode}/`
+    }
+    else {
+        return 'Type is not defined in function';
+    }
+
+    const puppeteer = require('puppeteer');
+    const axios = require('axios');
+
+    const xhrResponse = [];
+
+    const browser = await puppeteer.launch({
+        args: [
+            '--proxy-server=126.109.97.77:8080'
+        ]
+    });
+
+    const newpage = await browser.newPage();
+
+    // Enable network monitoring
+    await newpage.setRequestInterception(true);
+
+    // Listen for XHR requests and push their URLs to an array
+    newpage.on('request', async request => {
+        if (request.resourceType() === 'xhr') {
+            console.log(request.url())
+
+            if (regcheckLinkExists.test(request.url())) {
+                checkLinkExists = true;
+            }
+
+            if (regex.test(request.url())) {
+
+                const options = {
+                    url: request.url(),
+                    headers: request.headers(),
+                };
+
+                try {
+                    const { data } = await axios(options);
+                    xhrResponse.push(data);
+                } catch (error) {
+                    // console.error(error);
+                }
+            }
+        }
+        request.continue();
+    });
+
+    // Navigate to the URL
+    await newpage.goto(url);
+
+    // Wait for some time to capture all XHR requests
+    await newpage.waitForTimeout(5000);
+
+    await browser.close();
+
+    console.log("validLink: " + checkLinkExists);
+    console.log(xhrResponse);
+
+    return { response: xhrResponse, validLink: checkLinkExists };
+}
+
+
+
+
+
+
 
 // testing reel cron
 router.get("/testingreelcron", async (req, res) => {
     try {
 
-        var options = {
-            "method": "GET",
-            "hostname": "instagram-profile1.p.rapidapi.com",
-            "port": null,
-            "path": `/getpost/Ce8j3vhB_NZ`,
-            "headers": {
-                "X-RapidAPI-Key": '29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57',
-                "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
-                "useQueryString": true
-            }
-        };
+        // var options = {
+        //     "method": "GET",
+        //     "hostname": "instagram-profile1.p.rapidapi.com",
+        //     "port": null,
+        //     "path": `/getpost/Ce8j3vhB_NZ`,
+        //     "headers": {
+        //         "X-RapidAPI-Key": '29e3a657f0mshd2cf724a6f23862p1cbc59jsn1f05b4efdb57',
+        //         "X-RapidAPI-Host": "instagram-profile1.p.rapidapi.com",
+        //         "useQueryString": true
+        //     }
+        // };
 
-        var req = http.request(options, function (res) {
-            var chunks = [];
+        // var req = http.request(options, function (res) {
+        //     var chunks = [];
 
-            res.on("data", function (chunk) {
-                chunks.push(chunk);
-            });
+        //     res.on("data", function (chunk) {
+        //         chunks.push(chunk);
+        //     });
 
-            res.on("end", async function () {
-                const body = Buffer.concat(chunks);
-                // console.log(JSON.parse(body.toString()));
+        //     res.on("end", async function () {
+        //         const body = Buffer.concat(chunks);
+        //         // console.log(JSON.parse(body.toString()));
 
-                var data = JSON.parse(body.toString());
+        //         var data = JSON.parse(body.toString());
 
-                if (data.owner) {
-                    let reel_page_name = data.owner['username']
-                    let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
-                    let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
-                    let reel_like = data.media['like']
-                    let reel_comment = data.media['comment_count']
-                    let reel_caption = data.media['caption']
-                    let reel_date_of_posting = data.media['timestamp']
+        //         if (data.owner) {
+        //             let reel_page_name = data.owner['username']
+        //             let reel_view = (data.media['video_views'] ? data.media['video_views'] : null)
+        //             let reel_play = (data.media['video_play'] ? data.media['video_play'] : null)
+        //             let reel_like = data.media['like']
+        //             let reel_comment = data.media['comment_count']
+        //             let reel_caption = data.media['caption']
+        //             let reel_date_of_posting = data.media['timestamp']
 
-                    // console.log("reel_page_name: " + reel_page_name)
-                    // console.log("reel_play: " + reel_play)
-                    // console.log("reel_view: " + reel_view)
-                    // console.log("reel_like: " + reel_like)
-                    // console.log("reel_comment: " + reel_comment)
-                    // console.log("reel_caption: " + reel_caption)
-                    // console.log("reel_date_of_posting: " + reel_date_of_posting)
+        //             // console.log("reel_page_name: " + reel_page_name)
+        //             // console.log("reel_play: " + reel_play)
+        //             // console.log("reel_view: " + reel_view)
+        //             // console.log("reel_like: " + reel_like)
+        //             // console.log("reel_comment: " + reel_comment)
+        //             // console.log("reel_caption: " + reel_caption)
+        //             // console.log("reel_date_of_posting: " + reel_date_of_posting)
+        //         }
+
+
+        //     });
+        // });
+
+        // req.end();
+
+        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        var date_needed = '2023-03-02';
+
+        var todaydate = '2023-03-03';
+
+        // const reeldata = await reel.find({ reel_is_traverse: '0', reel_created_at: { '$regex': date_needed } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true });
+        const reeldata = await reel.find({ reel_is_traverse: '2', reel_updated_at: { '$regex': todaydate } }, { reel_link: 1, _id: 1, project_id: 1 }).sort({ reel_id: 1 }).collation({ locale: "en_US", numericOrdering: true });
+        console.log(reeldata.length);
+
+        for (let index = 0; index < reeldata.length; index++) {
+
+            let reellink = reeldata[index];
+            let reel_shortcode = reellink.reel_link.split("/")[4]
+
+            var currentdatetime = datetime('customdatetime', 7)
+
+            if (reel_shortcode) {
+
+
+                let prereel = await reel.findOne({ reel_link: { '$regex': reel_shortcode }, project_id: reellink.project_id, reel_created_at: { '$regex': todaydate } });
+
+                if (!prereel) {
+
+                    let reel_link = reellink.reel_link;
+                    let project_id = reellink.project_id;
+                    let reel_is_traverse = "0";
+                    let reel_created_at = currentdatetime;
+
+                    var reeldatacount = await reel.find().sort({ _id: -1 }).limit(1);
+                    let reel_id = (reeldatacount != null) ? parseInt(reeldatacount[0]["reel_id"]) + 1 : "1";  //reel id auto imcrement
+
+
+
+                    if (reel_link && project_id && reel_created_at) {
+                        let addReel = new reel({
+                            reel_id, reel_link, project_id, reel_is_traverse, reel_created_at
+                        });
+                        await addReel.save();
+                    }
+                }
+
+                const { response, validLink } = await InstagramDetails(reel_shortcode, 'reel');
+
+                if (!validLink && response.length === 0) {
+                    let reel_error = 'link data deleted, try with a vaild link';
+                    let reel_is_traverse = "2"
+                    let reel_updated_at = currentdatetime
+
+                    var id = reellink._id;
+
+                    // console.log(id)
+                    await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                        new: true
+                    });
                 }
 
 
-            });
-        });
+                else if (response.length > 0) {
 
-        req.end();
+                    var data = response[0].data.shortcode_media;
+
+                    if (data) {
+
+                        var responseShortCode = data.shortcode;
+
+                        if (responseShortCode === reel_shortcode) {
+
+                            let reel_page_name = data.owner.username
+                            let reel_view = (data.video_view_count ? data.video_view_count : null)
+                            let reel_play = (data.video_play_count ? data.video_play_count : null)
+                            let reel_like = data.edge_media_preview_like.count
+                            let reel_comment = data.edge_media_to_parent_comment.count
+                            let reel_caption = (data.edge_media_to_caption.edges.length > 0 ? data.edge_media_to_caption.edges[0].node.text : 'N\A')
+                            let reel_date_of_posting = data.taken_at_timestamp
+                            let reel_is_traverse = "1"
+
+                            let reel_updated_at = currentdatetime
+
+                            var id = reellink._id;
+                            // console.log(id)
+                            await reel.findByIdAndUpdate(id, { $set: { reel_page_name: reel_page_name, reel_view: reel_view, reel_play: reel_play, reel_like: reel_like, reel_comment: reel_comment, reel_caption: reel_caption, reel_date_of_posting: reel_date_of_posting, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                                new: true
+                            });
+                        }
+                    }
+                    else {
+                        let reel_error = 'Data not exists!!, Please try again later.'
+                        let reel_is_traverse = "2"
+                        let reel_updated_at = currentdatetime
+
+                        var id = reellink._id;
+
+                        // console.log(id)
+                        await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                            new: true
+                        });
+                    }
+
+                }
+
+                else {
+                    let reel_error = 'Scrapping Error!!, Please try again later.'
+                    let reel_is_traverse = "2"
+                    let reel_updated_at = currentdatetime
+
+                    var id = reellink._id;
+
+                    // console.log(id)
+                    await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                        new: true
+                    });
+                }
+
+                // await sleep(1500);
+            }
+
+            else {
+                let reel_error = "link is not correct"
+                let reel_is_traverse = "-1"
+                let reel_updated_at = currentdatetime
+
+                var id = reellink._id;
+
+                // console.log(id)
+                await reel.findByIdAndUpdate(id, { $set: { reel_error: reel_error, reel_is_traverse: reel_is_traverse, reel_updated_at: reel_updated_at } }, {
+                    new: true
+                });
+            }
+            console.log(reel_shortcode)
+        }
+
+        console.log("complete");
+        res.status(201).json("testing cronReelApi hit successfull");
+
     }
     catch (error) {
         res.status(422).json(error);
@@ -4227,77 +4575,27 @@ router.get("/checkLink", async (request, response) => {
 });
 
 
-const InstagramDetails = async (url, type) => {
-    if (!url) {
-        return;
-    }
 
-    var regex;
-    if (type === 'profile' || type === 'page') {
-        regex = new RegExp("web_profile_info", "i")
-    }
-    else if (type === 'post' || type === 'reel' || type === 'video') {
-        regex = new RegExp("graphql/query", "i")
-    }
-    else {
-        return 'Type is not defined in function';
-    }
-
-    const puppeteer = require('puppeteer');
-    const xhrResponse = [];
-
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
-    // Enable network monitoring
-    await page.setRequestInterception(true);
-
-    // Listen for XHR requests and push their URLs to an array
-    page.on('request', request => {
-        if (request.resourceType() === 'xhr') {
-
-            if (regex.test(request.url())) {
-
-                const req = require('request');
-
-                const options = {
-                    url: request.url(),
-                    headers: request.headers(),
-                };
-
-                req(options, (error, response, body) => {
-                    if (error) {
-                        console.error(error);
-                    } else {
-                        xhrResponse.push(JSON.parse(body))
-                    }
-                });
-            }
-        }
-        request.continue();
-    });
-
-    // Navigate to the URL
-    await page.goto(url);
-
-    // Wait for some time to capture all XHR requests
-    await page.waitForTimeout(1000);
-
-    await browser.close();
-
-    return xhrResponse
-}
 
 router.get("/testlink", async (req, res) => {
     try {
 
         // const url = "https://www.instagram.com/yrf/";
-        const url = "https://www.instagram.com/reel/CpUKs86IWkY/";
+        // const url = "https://www.instagram.com/reel/CmJBH_1okx0/?igshid=NDk5N2NlZjQ=";
+
+        // const shortcode = "yrf";
+        const shortcode = "CmJBH_1okx0";
 
         // const type = "profile";
         const type = "reel";
 
-        const response = await InstagramDetails(url, type);
+        const response = await InstagramDetails(shortcode, type);
+
+        // if (response.length > 0) {
+        //     data = response[0].data.shortcode_media;
+        //     var responseShortCode = data.shortcode;
+        //     console.log(responseShortCode)
+        // }
 
         res.status(201).json(response)
 
@@ -4306,6 +4604,348 @@ router.get("/testlink", async (req, res) => {
         res.status(422).json(error)
     }
 });
+
+
+
+const puppeteer = require('puppeteer');
+
+async function getUrlsWithKeywords(keyword) {
+    const browser = await puppeteer.launch();
+    const maxPages = 10;
+    const urlsSet = new Set();
+    const emailsSet = new Set();
+
+    const pagePromises = [];
+
+    for (let i = 0; i < maxPages; i++) {
+        const page = await browser.newPage();
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${i * 10}`;
+        const pagePromise = page.goto(searchUrl, { waitUntil: 'networkidle0' })
+            .then(() => page.waitForSelector('a'))
+            .then(() => page.evaluate(() => {
+                const links = Array.from(document.querySelectorAll('a')).map(a => a.href);
+                return links.filter(link => link.startsWith('http') && !link.includes('google.com/search'));
+            }))
+            .then(async links => {
+                for (const url of links) {
+                    urlsSet.add(url);
+                    const emails = await extractEmails(browser, url);
+                    emails.forEach(email => emailsSet.add(email));
+                }
+                await page.close();
+            })
+            .catch(e => {
+                console.error(e);
+                page.close();
+            });
+        pagePromises.push(pagePromise);
+    }
+
+    await Promise.all(pagePromises);
+
+    await browser.close();
+    return { urls: [...urlsSet], emails: [...emailsSet] };
+}
+
+async function extractEmails(browser, url) {
+    console.log(url)
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle0' });
+    const content = await page.content();
+    const emails = content.match(/\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?<!\.png|\.jpg|\.jpeg|\.gif|\.webp)\b/g);
+
+    // const nextPageLink = await page.evaluate(() => {
+    //     const nextLink = document.querySelector('a[rel="next"]');
+    //     return nextLink ? nextLink.href : null;
+    // });
+
+    // if (nextPageLink) {
+    //     await page.close();
+    //     const nextPageEmails = await extractEmails(browser, nextPageLink);
+    //     return [...new Set([...emails, ...nextPageEmails])];
+    // } else {
+    await page.close();
+    const validEmails = await validateEmails(emails);
+    return validEmails;
+    // }
+}
+
+async function validateEmails(emails) {
+    // console.log(emails)
+    const emailValidator = require('email-validator');
+    const validEmails = [];
+    if (emails) {
+        for (const email of emails) {
+            if (emailValidator.validate(email)) {
+                validEmails.push(email);
+            }
+        }
+    }
+    return validEmails;
+}
+
+
+router.get("/testscrapemail", async (req, res) => {
+
+    try {
+
+
+        // const puppeteer = require('puppeteer');
+
+        // async function getUrlsWithKeywords(keyword) {
+        //     const browser = await puppeteer.launch();
+        //     const maxPages = 5;
+        //     const pages = await Promise.all([...Array(maxPages).keys()].map(async (i) => {
+        //         const page = await browser.newPage();
+        //         const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${i * 10}`;
+        //         // await page.goto(searchUrl, { waitUntil: 'networkidle2' });
+        //         try {
+        //             await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 120000 });
+        //           } catch (e) {
+        //             if (e instanceof puppeteer.errors.TimeoutError) {
+        //               console.log(`TimeoutError occurred. Retrying...`);
+        //               await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
+        //             }
+        //           }
+        //         return page;
+        //     }));
+
+        //     let urlsSet = new Set();
+        //     let emailsSet = new Set();
+        //     for (const page of pages) {
+        //         const links = await page.$$eval('a', (as) => as.map((a) => a.href));
+        //         for (const url of links.filter((url) => url.startsWith('http'))) {
+        //             urlsSet.add(url);
+        //             const emails = await extractEmails(browser, url);
+        //             emails.forEach((email) => emailsSet.add(email));
+        //         }
+        //     }
+
+        //     await browser.close();
+        //     return { urls: [...urlsSet], emails: [...emailsSet] };
+        // }
+
+        // async function extractEmails(browser, url) {
+        //     // console.log(url)
+        //     const page = await browser.newPage();
+        //     await page.goto(url, { waitUntil: 'networkidle2' });
+        //     const content = await page.content();
+        //     // const emails = content.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+        //     const emails = content.match(/\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?<!\.png|\.jpg|\.jpeg|\.gif)\b/g);
+
+        //     // If the page has multiple pages, find and follow the next page link
+        //     const nextPageLink = await page.evaluate(() => {
+        //         const nextLink = document.querySelector('a[rel="next"]');
+        //         return nextLink ? nextLink.href : null;
+        //     });
+
+        //     if (nextPageLink) {
+        //         // The page has multiple pages, so recursively call this function on the next page
+        //         const nextPageEmails = await extractEmails(browser, nextPageLink);
+        //         return [...new Set([...emails, ...nextPageEmails])];
+        //     } else {
+        //         // The page is a single page, so validate and return the emails
+        //         const validEmails = await validateEmails(emails);
+        //         return validEmails;
+        //     }
+        // }
+
+        // async function validateEmails(emails) {
+        //     // console.log(emails)
+        //     const emailValidator = require('email-validator');
+        //     const validEmails = [];
+        //     if (emails){
+        //         for (const email of emails) {
+        //             if (emailValidator.validate(email)) {
+        //                 validEmails.push(email);
+        //             }
+        //         }
+        //     }
+        //     return validEmails;
+        // }
+
+        // const keyword = 'men tshirts';
+        // const { urls, emails } = await getUrlsWithKeywords(keyword);
+        // // console.log({ urls: urls, emails: emails });
+        // res.status(201).json({ urls: urls, emails: emails });
+
+
+        // const puppeteer = require('puppeteer');
+
+        // async function getUrlsWithKeywords(keyword) {
+        //     const browser = await puppeteer.launch();
+        //     const maxPages = 7;
+        //     const urlsSet = new Set();
+        //     const emailsSet = new Set();
+
+        //     for (let i = 0; i < maxPages; i++) {
+        //       const page = await browser.newPage();
+        //       const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${i * 10}`;
+
+        //       try {
+        //         const timeoutPromise = new Promise(resolve => setTimeout(resolve, 30000));
+        //         const loadPromise = page.goto(searchUrl, { waitUntil: 'networkidle2' });
+        //         await Promise.race([timeoutPromise, loadPromise]);
+
+        //         const links = await page.$$eval('a', (as) => as.map((a) => a.href));
+        //         for (const url of links.filter((url) => url.startsWith('http'))) {
+        //           urlsSet.add(url);
+        //           const emails = await extractEmails(browser, url);
+        //           emails.forEach((email) => emailsSet.add(email));
+        //         }
+        //       } catch (e) {
+        //         console.error(e);
+        //       } finally {
+        //         await page.close();
+        //       }
+        //     }
+
+        //     await browser.close();
+        //     return { urls: [...urlsSet], emails: [...emailsSet] };
+        //   }
+
+        //   async function extractEmails(browser, url) {
+        //     const page = await browser.newPage();
+        //     await page.goto(url, { waitUntil: 'networkidle2' });
+        //     const content = await page.content();
+        //     const emails = content.match(/\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?<!\.png|\.jpg|\.jpeg|\.gif)\b/g);
+
+        //     const nextPageLink = await page.evaluate(() => {
+        //       const nextLink = document.querySelector('a[rel="next"]');
+        //       return nextLink ? nextLink.href : null;
+        //     });
+
+        //     if (nextPageLink) {
+        //       await page.close();
+        //       const nextPageEmails = await extractEmails(browser, nextPageLink);
+        //       return [...new Set([...emails, ...nextPageEmails])];
+        //     } else {
+        //       await page.close();
+        //       const validEmails = await validateEmails(emails);
+        //       return validEmails;
+        //     }
+        //   }
+
+        //   async function validateEmails(emails) {
+        //     const emailValidator = require('email-validator');
+        //     const validEmails = [];
+        //     if (emails){
+        //       for (const email of emails) {
+        //         if (emailValidator.validate(email)) {
+        //           validEmails.push(email);
+        //         }
+        //       }
+        //     }
+        //     return validEmails;
+        //   }
+
+        //   const keyword = 'men tshirts';
+        //   const { urls, emails } = await getUrlsWithKeywords(keyword);
+        //   res.status(201).json({ urls: urls, emails: emails });
+
+
+        const keyword = 'print on demand india';
+        const { urls, emails } = await getUrlsWithKeywords(keyword);
+        res.status(201).json({ urls: urls, emails: emails });
+
+
+
+        // res.status(201).json("emails");
+
+    } catch (error) {
+        res.status(422).json(error)
+    }
+});
+
+
+router.get("/testscrapemailfromfile", async (req, res) => {
+
+    try {
+
+        const csv = require('csv-parser');
+
+        // const results = [];
+        // const url = [];
+        // const emailsSet = new Set();
+
+
+        // fs.createReadStream('./url_files.csv', { encoding: 'utf8' })
+        //     .pipe(csv())
+        //     .on('data', async (data) => {
+        //         results.push(data)
+        //         url.push(data.URL)
+        //         if (data.URL) {
+
+        //             const browser = await puppeteer.launch();
+
+        //             const emails = await extractEmails(browser, data.URL);
+        //             emails.forEach(email => emailsSet.add(email));
+
+        //         }
+        //     })
+        //     .on('end', () => {
+        //         res.status(201).json(emailsSet);
+        //     });
+
+
+
+        async function extractEmails(page) {
+            const content = await page.content();
+            const emails = content.match(/\b[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?<!\.png|\.jpg|\.jpeg|\.gif|\.webp)\b/g);
+            return emails || [];
+        }
+
+        async function processUrl(browser, url, emailsSet) {
+            try {
+                console.log(`Extracting emails from ${url}`);
+                const page = await browser.newPage();
+                await page.goto(url, { waitUntil: 'networkidle0' });
+                const emails = await extractEmails(page);
+                const validEmails = await validateEmails(emails);
+                validEmails.forEach(email => emailsSet.add(email));
+                await page.close();
+            } catch (err) {
+                console.error(`Error extracting emails from ${url}:`, err);
+            }
+        }
+
+        async function validateEmails(emails) {
+            const emailValidator = require('email-validator');
+            const validEmails = [];
+            for (const email of emails) {
+                if (emailValidator.validate(email)) {
+                    validEmails.push(email);
+                }
+            }
+            return validEmails;
+        }
+
+
+        const urls = [];
+        const emailsSet = new Set();
+        fs.createReadStream('./url_files.csv', { encoding: 'utf8' })
+            .pipe(csv())
+            .on('data', (data) => {
+                if (data.URL) {
+                    urls.push(data.URL);
+                }
+            })
+            .on('end', async () => {
+                const browser = await puppeteer.launch();
+                for (const url of urls) {
+                    await processUrl(browser, url, emailsSet);
+                }
+                await browser.close();
+                console.log(`Extracted ${emailsSet.size} unique emails`);
+            });
+
+
+
+    } catch (error) {
+        res.status(422).json(error)
+    }
+});
+
 
 
 module.exports = router;
